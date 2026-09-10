@@ -435,13 +435,19 @@ class Id3Editor {
         const Uint = new Uint8Array(arrayBuffer);
         let scanned = 0;
         const UTFBOM = [255, 254];
-        function verify(/** @type {ArrayLike<number>} */set) {
-            return Uint.subarray(scanned, scanned + set.length).every((e, i) => e === set[i]);
+        function verify(/** @type {ArrayLike<number>} */set, /** @type {number|undefined} */depth) {
+            return Uint.subarray(depth??scanned, (depth??scanned) + set.length).every((e, i) => e === set[i]);
         }
-        function extract(/** @type {number} */length) {
-            const sub = Uint.subarray(scanned, scanned + length);
+        function extract(/** @type {number} */length, /** @type {number|undefined} */depth) {
+            const sub = Uint.subarray(depth??scanned, (depth??scanned) + length);
             return sub;
         }
+        const isStart = verify(charCodes("ID3"));
+        const isOldEnd = verify(charCodes("TAG"),Uint.length-128);
+        const isNewEnd = verify(charCodes("3DI"),Uint.length-(isOldEnd?138:10));
+        console.log(isStart+"-"+isOldEnd+"-"+isNewEnd);
+        console.log(extract(3,0)+"-"+extract(10,Uint.length-128)+"-"+extract(10,Uint.length-138));
+        return;
         const ID33 = [73, 68, 51, 3];
         if (!verify(ID33)) throw new Error("Invalid Version Number " + extract(4).join(","));//ID3v2.3.0
         scanned += ID33.length + 2;//FrameFlags (ignored)
