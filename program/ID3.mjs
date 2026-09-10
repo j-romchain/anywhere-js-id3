@@ -122,7 +122,7 @@ function syncLyricsFrameSize(e, t) {
     }
     ), 18 + a + 2 + r
 }
-class ID3Writer {
+class Id3Editor {
     /** @type {ArrayBuffer} */
     arrayBuffer;
     /** @type {number} */
@@ -310,12 +310,12 @@ class ID3Writer {
     //  * @template {ID3FrameType} K
     //  * @param {K} key 
     //  * @param {ID3FrameMap[K]['arg']} value
-    //  * @returns {ID3Writer}
+    //  * @returns {Id3Editor}
     //  */
     /**
      * Set a frame in the ID3 tag.
      * @param {ID3FrameArg} dummyFrame 
-     * @returns {ID3Writer}
+     * @returns {Id3Editor}
      */
     setFrame(dummyFrame) {
         this.frames.push(this.genFrame(dummyFrame));
@@ -615,6 +615,6 @@ class ID3Writer {
 
 }
 export {
-    ID3Writer as ID3Writer
+    Id3Editor as Id3Editor
 }
     ;
