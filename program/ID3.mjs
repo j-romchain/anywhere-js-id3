@@ -51,7 +51,71 @@
 /** @typedef {ID3FrameMap[ID3FrameType]['arg']} ID3FrameArg */
 /** @typedef {{ [K in ID3FrameType]: ID3FrameMap[K]['arg']; }} ID3FrameArgs */
 
+/** 
+ *  @interface ID3FrameBase
+ *  @property {string} name
+ *  @property {number} size
+ */
+/** 
+ *  @interface ID3StringFrame
+ *  @extends ID3FrameBase
+ *  @property {string} value
+ */
+/** 
+ *  @interface ID3IntegerFrame
+ *  @extends ID3FrameBase
+ *  @property {number} value
+ */
+/** 
+ *  @interface ID3LanguageTextFrame
+ *  @extends ID3FrameBase
+ *  @property {string} value
+ *  @property {number[]} language
+ *  @property {string} description
+ */
+/** 
+ *  @interface ID3PrivateFrame
+ *  @extends ID3FrameBase
+ *  @property {string} id
+ *  @property {ArrayBuffer | ArrayLike<number>} value
+ */
+/** 
+ *  @interface ID3PictureFrame
+ *  @extends ID3FrameBase
+ *  @property {ArrayBuffer | ArrayLike<number>} value
+ *  @property {number} pictureType
+ *  @property {"image/jpeg" | "image/png" | "image/gif" | "image/webp" | "image/tiff" | "image/bmp" | "image/x-icon"} mimeType
+ *  @property {boolean} [useUnicodeEncoding]
+ *  @property {string} [description]
+ */
+/** @typedef {[string, number]} ID3PairedTextEntry */
+/** 
+ *  @interface ID3PairedTextFrame
+ *  @extends ID3FrameBase
+ *  @property {ID3PairedTextEntry[]} value
+ */
+/** 
+ *  @interface ID3SynchronisedLyricsFrame
+ *  @extends ID3FrameBase
+ *  @property {[string, number][]} value
+ *  @property {number[]} language
+ *  @property {string} description
+ *  @property {number} type
+ *  @property {number} timestampFormat
+ */
+/**
+ * @typedef {Object} Uint8ArrayScanner
+ * @property {Uint8Array<ArrayBuffer>} Uint
+ * @property {number} scanned
+ * @property {(set: ArrayLike<number>, depth?: number) => boolean} verify
+ * @property {(length: number, depth?: number) => Uint8Array} extract
+ * @property {(n: number) => void} increment
+ * @property {() => void} reset
+ * @property {(n: number) => void} backtrack
+ * @property {() => Uint8Array<ArrayBuffer>} remaining
+ */
 
+const UTFBOM = [255, 254];
 /**
  * @param {string} e
  */
@@ -138,6 +202,24 @@ class Id3Editor {
         if (!arrayBuffer || "object" != typeof arrayBuffer || !("byteLength" in arrayBuffer)) throw new Error("First argument should be an instance of ArrayBuffer or Buffer");
         this.arrayBuffer = arrayBuffer;
         this.frames = this.readTag(arrayBuffer).frames;
+    }
+    /**
+     * @param {Uint8Array|ArrayBuffer} arrayBuffer
+     * @returns {Uint8ArrayScanner}
+     */
+    newScanner(arrayBuffer) {
+        /** @type {Uint8ArrayScanner} */
+        const scanner = {
+            Uint: new Uint8Array(arrayBuffer),
+            scanned: 0,
+            verify: (set, depth) => scanner.Uint.subarray(depth ?? scanner.scanned, (depth ?? scanner.scanned) + set.length).every((e, i) => e === set[i]),
+            extract: (length, depth) => scanner.Uint.subarray(depth ?? scanner.scanned, (depth ?? scanner.scanned) + length),
+            increment: (n) => { scanner.scanned += n; },
+            reset: () => { scanner.scanned = 0; },
+            backtrack: (n) => { scanner.scanned -= n; },
+            remaining: () => scanner.Uint.subarray(scanner.scanned)
+        };
+        return scanner;
     }
     /**
      * @template {ID3FrameType} K
@@ -321,15 +403,39 @@ class Id3Editor {
         this.frames.push(this.genFrame(dummyFrame));
         return this
     }
-    removeTag() {
-        if (this.arrayBuffer.byteLength < 10) return;
-        const e = new Uint8Array(this.arrayBuffer), t = e[3], a = ((r = [e[6], e[7], e[8], e[9]])[0] << 21) + (r[1] << 14) + (r[2] << 7) + r[3] + 10;
-        var r, n;
-        73 !== (n = e)[0] || 68 !== n[1] || 51 !== n[2] || t < 2 || t > 4 || (this.arrayBuffer = new Uint8Array(e.subarray(a)).buffer)
+    /**
+     * @param {ArrayBuffer} arrayBuffer
+     */
+    removeTags(arrayBuffer) {
+        const scanner = this.newScanner(arrayBuffer);
+        const isStart = scanner.verify(charCodes("ID3"));
+        const isOldEnd = scanner.verify(charCodes("TAG"),scanner.Uint.length-128);
+        const isNewEnd = scanner.verify(charCodes("3DI"),scanner.Uint.length-(isOldEnd?138:10));
+        if ((isStart || isOldEnd || isNewEnd) && (arrayBuffer.byteLength < 10)) {
+            throw new Error("Corrupted ID3 tag, file too small.");
+        }
+        let [newStart, newEnd] = [0, arrayBuffer.byteLength];
+        if (isStart) {
+            if (arrayBuffer.byteLength < 10) throw new Error("Invalid ID3v2 tag");
+            const sizeBits = scanner.extract(4, 6),
+            size = (sizeBits[0] << 21) + (sizeBits[1] << 14) + (sizeBits[2] << 7) + sizeBits[3] + 10;
+            newStart = size;
+        }
+        if (isOldEnd) {
+            if (arrayBuffer.byteLength < 128) throw new Error("Invalid ID3v1 tag");
+            newEnd -= 128;
+        }
+        if (isNewEnd) {
+            if (arrayBuffer.byteLength < 10) throw new Error("Invalid ID3v2 tag");
+            const sizeBits = scanner.extract(4, newEnd - 6),
+            size = (sizeBits[0] << 21) + (sizeBits[1] << 14) + (sizeBits[2] << 7) + sizeBits[3] + 10;
+            newEnd -= size;
+        }
+        if (newStart >= newEnd) throw new Error("Corrupted ID3 tag, file too small for detected tags.");
+        return arrayBuffer.slice(newStart, newEnd);
     }
     addTag() {
-        this.removeTag();
-        const UTFBOM = [255, 254];
+        this.arrayBuffer = this.removeTags(this.arrayBuffer);
         const totalTagLength = 10 + this.frames.reduce((sum, frame) => sum + frame.size, 0) + this.padding;
         const newBuffer = new ArrayBuffer(this.arrayBuffer.byteLength + totalTagLength)
         const newUint = new Uint8Array(newBuffer);
@@ -425,174 +531,158 @@ class Id3Editor {
         ), c += this.padding, newUint.set(new Uint8Array(this.arrayBuffer), c), this.arrayBuffer = newBuffer, newBuffer
     }
     /**
-     * 
-     * @param {ArrayBuffer} arrayBuffer
-     * @returns {{ frames:ID3Frame[], remaining:ArrayBuffer }}
+     * @param {Uint8ArrayScanner} scanner 
+     * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
      */
-    readTag(arrayBuffer) {
+    _readID3v2(scanner) {
+        scanner.reset();
         /** @type {ID3Frame[]} */
         const frames = [];
-        const Uint = new Uint8Array(arrayBuffer);
-        let scanned = 0;
-        const UTFBOM = [255, 254];
-        function verify(/** @type {ArrayLike<number>} */set, /** @type {number|undefined} */depth) {
-            return Uint.subarray(depth??scanned, (depth??scanned) + set.length).every((e, i) => e === set[i]);
-        }
-        function extract(/** @type {number} */length, /** @type {number|undefined} */depth) {
-            const sub = Uint.subarray(depth??scanned, (depth??scanned) + length);
-            return sub;
-        }
-        const isStart = verify(charCodes("ID3"));
-        const isOldEnd = verify(charCodes("TAG"),Uint.length-128);
-        const isNewEnd = verify(charCodes("3DI"),Uint.length-(isOldEnd?138:10));
-        console.log(isStart+"-"+isOldEnd+"-"+isNewEnd);
-        console.log(extract(3,0)+"-"+extract(10,Uint.length-128)+"-"+extract(10,Uint.length-138));
-        return;
         const ID33 = [73, 68, 51, 3];
-        if (!verify(ID33)) throw new Error("Invalid Version Number " + extract(4).join(","));//ID3v2.3.0
-        scanned += ID33.length + 2;//FrameFlags (ignored)
-        const encodedLength = extract(4);
+        if (!scanner.verify(ID33)) throw new Error("Invalid Version Number " + scanner.extract(4).join(","));//ID3v2.3.0
+        scanner.increment(ID33.length + 2);//FrameFlags (ignored)
+        const encodedLength = scanner.extract(4);
         const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
-        scanned += 4;
-        if (decodedLength > Uint.length - scanned) throw new Error("Invalid tag length " + decodedLength);
-        const headerend = scanned;
-        while (scanned < headerend + decodedLength) {
+        scanner.increment(4);
+        if (decodedLength > scanner.Uint.length - scanner.scanned) throw new Error("Invalid tag length " + decodedLength);
+        const headerend = scanner.scanned;
+        while (scanner.scanned < headerend + decodedLength) {
             /** @type {any} */
             const frame = {};
-            const encodedFName = extract(4);
+            const encodedFName = scanner.extract(4);
             frame.name = bytesToStr(encodedFName);
             if (!frame.name || frame.name === "\0\0\0\0") break;
             if (!frame.name.match(/^[A-Z0-9]{4}$/)) throw new Error("Invalid frame name " + frame.name);
-            scanned += 4;
-            const encodedFSize = extract(4);
+            scanner.increment(4);
+            const encodedFSize = scanner.extract(4);
             frame.size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
             let remainingFrame = frame.size;
-            if (frame.size > decodedLength + headerend - scanned) throw new Error("Invalid frame size " + frame.size);
-            scanned += 4;
-            scanned += 2;//FrameFlags (ignored)
+            if (frame.size > decodedLength + headerend - scanner.scanned) throw new Error("Invalid frame size " + frame.size);
+            scanner.increment(4);
+            scanner.increment(2);//FrameFlags (ignored)
             switch (frame.name) {
                 case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
-                    if (!verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += [1].concat(UTFBOM).length;
+                    if (!scanner.verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment([1].concat(UTFBOM).length);
                 case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
-                    frame.value = bytesToStr(extract(remainingFrame - 1));
-                    scanned += remainingFrame - 1;
+                    frame.value = bytesToStr(scanner.extract(remainingFrame - 1));
+                    scanner.increment(remainingFrame - 1);
                     break;
                 case "TXXX": case "USLT": case "COMM":
-                    if (!verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += 1;
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
                     remainingFrame -= 1;
                     if (frame.name != "TXXX") {
-                        frame.language = Array.from(extract(3));
-                        scanned += 3;
+                        frame.language = Array.from(scanner.extract(3));
+                        scanner.increment(3);
                         remainingFrame -= 3;
                     }
-                    if (!verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += UTFBOM.length;
+                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(UTFBOM.length);
                     remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(extract(remainingFrame - 2));
-                    scanned += frame.description.length + 2;
+                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                    scanner.increment(frame.description.length + 2);
                     remainingFrame -= frame.description.length + 2;
-                    if (!verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += [0, 0].concat(UTFBOM).length;
+                    if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment([0, 0].concat(UTFBOM).length);
                     remainingFrame -= [0, 0].concat(UTFBOM).length;
-                    frame.value = bytesToStr(extract(remainingFrame));
-                    scanned += remainingFrame;
+                    frame.value = bytesToStr(scanner.extract(remainingFrame));
+                    scanner.increment(remainingFrame);
                     break;
                 case "TBPM": case "TLEN": case "TDAT": case "TYER":
-                    if (!verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.value = parseInt(bytesToStr(extract(remainingFrame - 1)), 10);
-                    scanned += remainingFrame;
+                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    frame.value = parseInt(bytesToStr(scanner.extract(remainingFrame - 1)), 10);
+                    scanner.increment(remainingFrame);
                     break;
                 case "PRIV":
-                    frame.id = bytesToStr(extract(remainingFrame - 1));
-                    scanned += frame.id.length + 1;
+                    frame.id = bytesToStr(scanner.extract(remainingFrame - 1));
+                    scanner.increment(frame.id.length + 1);
                     remainingFrame -= frame.id.length + 1;
-                    frame.value = extract(remainingFrame - 1 - frame.id.length);
-                    scanned += frame.value.byteLength;
+                    frame.value = scanner.extract(remainingFrame - 1 - frame.id.length);
+                    scanner.increment(frame.value.byteLength);
                     break;
                 case "APIC":
-                    frame.useUnicodeEncoding = extract(1)[0]===1;
-                    frame.mimeType = bytesToStr(extract(remainingFrame - 1 - 1 - 1));
-                    scanned += frame.mimeType.length + 1;
+                    frame.useUnicodeEncoding = scanner.extract(1)[0]===1;
+                    frame.mimeType = bytesToStr(scanner.extract(remainingFrame - 1 - 1 - 1));
+                    scanner.increment(frame.mimeType.length + 1);
                     remainingFrame -= frame.mimeType.length + 1;
-                    if (!verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.pictureType = extract(1)[0];
-                    scanned += 1;
+                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    frame.pictureType = scanner.extract(1)[0];
+                    scanner.increment(1);
                     remainingFrame -= 1;
                     if (frame.useUnicodeEncoding) {
-                        if (!verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanned += UTFBOM.length;
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length);
                         remainingFrame -= UTFBOM.length;
-                        frame.description = bytesToStr(extract(remainingFrame - 2));
-                        scanned += frame.description.length + 2;
+                        frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(frame.description.length + 2);
                         remainingFrame -= frame.description.length + 2;
                     } else {
-                        frame.description = bytesToStr(extract(remainingFrame - 1));
-                        scanned += frame.description.length + 2;
+                        frame.description = bytesToStr(scanner.extract(remainingFrame - 1));
+                        scanner.increment(frame.description.length + 2);
                         remainingFrame -= frame.description.length + 2;
                     }
-                    frame.value = extract(remainingFrame);
-                    scanned += frame.value.length;
+                    frame.value = scanner.extract(remainingFrame);
+                    scanner.increment(frame.value.length);
                     break;
                 case "IPLS":
-                    if (!verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += 1;
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
                     remainingFrame -= 1;
                     /** @type {[string, number][]} */
                     frame.value = [];
                     while (remainingFrame > 0) {
-                        if (!verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanned += UTFBOM.length;
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length);
                         remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(extract(remainingFrame - 2));
-                        scanned += str.length + 2;
+                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(str.length + 2);
                         remainingFrame -= str.length + 2;
-                        if (!verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanned += [0, 0].concat(UTFBOM).length;
+                        if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment([0, 0].concat(UTFBOM).length);
                         remainingFrame -= [0, 0].concat(UTFBOM).length;
-                        const num = parseInt(bytesToStr(extract(remainingFrame - 2)), 10);
-                        scanned += num.toString().length + 2;
+                        const num = parseInt(bytesToStr(scanner.extract(remainingFrame - 2)), 10);
+                        scanner.increment(num.toString().length + 2);
                         remainingFrame -= num.toString().length + 2;
                         frame.value.push([str, num]);
-                        if (!verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanned += 2;
+                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(2);
                         remainingFrame -= 2;
                     }
                     break;
                 case "SYLT": 
-                    if (!verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += 1;
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
                     remainingFrame -= 1;
-                    frame.language = Array.from(extract(3));
-                    scanned += 3;
+                    frame.language = Array.from(scanner.extract(3));
+                    scanner.increment(3);
                     remainingFrame -= 3;
-                    frame.timestampFormat = extract(1)[0];
-                    scanned += 1;
+                    frame.timestampFormat = scanner.extract(1)[0];
+                    scanner.increment(1);
                     remainingFrame -= 1;
-                    frame.type = extract(1)[0];
-                    scanned += 1;
+                    frame.type = scanner.extract(1)[0];
+                    scanner.increment(1);
                     remainingFrame -= 1;
-                    if (!verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanned += UTFBOM.length;
+                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(UTFBOM.length);console.log();
                     remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(extract(remainingFrame - 2));
-                    scanned += frame.description.length + 2;
+                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                    scanner.increment(frame.description.length + 2);
                     remainingFrame -= frame.description.length + 2;
                     /** @type {[string, number][]} */
                     frame.value = [];
                     while (remainingFrame > 0) {
-                        if (!verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanned += UTFBOM.length;
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length)
                         remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(extract(remainingFrame - 2));
-                        scanned += str.length + 2;
+                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(str.length + 2)
                         remainingFrame -= str.length + 2;
-                        if (!verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanned += 2;
+                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(2)
                         remainingFrame -= 2;
-                        const num = (extract(4)[0] << 24) + (extract(4)[1] << 16) + (extract(4)[2] << 8) + extract(4)[3];
-                        scanned += 4;
+                        const num = (scanner.extract(4)[0] << 24) + (scanner.extract(4)[1] << 16) + (scanner.extract(4)[2] << 8) + scanner.extract(4)[3];
+                        scanner.increment(4)
                         remainingFrame -= 4;
                         frame.value.push([str, num]);
                     }
@@ -600,11 +690,359 @@ class Id3Editor {
                 default:
                     throw new Error(`Unsupported frame ${frame.name}`)
             }
-            scanned += remainingFrame;
+            scanner.increment(remainingFrame)
             frames.push(frame);
         }
-        const remaining = Uint.subarray(scanned);
+        const remaining = scanner.remaining();
         return { frames: frames, remaining: remaining.buffer };
+    }
+    /**
+     * @param {Uint8ArrayScanner} scanner 
+     * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
+     */
+    _readID3v1(scanner) {
+        scanner.reset();
+        /** @type {ID3Frame[]} */
+        const frames = [];
+        const ID33 = [73, 68, 51, 3];
+        if (!scanner.verify(ID33)) throw new Error("Invalid Version Number " + scanner.extract(4).join(","));//ID3v2.3.0
+        scanner.increment(ID33.length + 2);//FrameFlags (ignored)
+        const encodedLength = scanner.extract(4);
+        const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
+        scanner.increment(4);
+        if (decodedLength > scanner.Uint.length - scanner.scanned) throw new Error("Invalid tag length " + decodedLength);
+        const headerend = scanner.scanned;
+        while (scanner.scanned < headerend + decodedLength) {
+            /** @type {any} */
+            const frame = {};
+            const encodedFName = scanner.extract(4);
+            frame.name = bytesToStr(encodedFName);
+            if (!frame.name || frame.name === "\0\0\0\0") break;
+            if (!frame.name.match(/^[A-Z0-9]{4}$/)) throw new Error("Invalid frame name " + frame.name);
+            scanner.increment(4);
+            const encodedFSize = scanner.extract(4);
+            frame.size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
+            let remainingFrame = frame.size;
+            if (frame.size > decodedLength + headerend - scanner.scanned) throw new Error("Invalid frame size " + frame.size);
+            scanner.increment(4);
+            scanner.increment(2);//FrameFlags (ignored)
+            switch (frame.name) {
+                case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
+                    if (!scanner.verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment([1].concat(UTFBOM).length);
+                case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
+                    frame.value = bytesToStr(scanner.extract(remainingFrame - 1));
+                    scanner.increment(remainingFrame - 1);
+                    break;
+                case "TXXX": case "USLT": case "COMM":
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    if (frame.name != "TXXX") {
+                        frame.language = Array.from(scanner.extract(3));
+                        scanner.increment(3);
+                        remainingFrame -= 3;
+                    }
+                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(UTFBOM.length);
+                    remainingFrame -= UTFBOM.length;
+                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                    scanner.increment(frame.description.length + 2);
+                    remainingFrame -= frame.description.length + 2;
+                    if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment([0, 0].concat(UTFBOM).length);
+                    remainingFrame -= [0, 0].concat(UTFBOM).length;
+                    frame.value = bytesToStr(scanner.extract(remainingFrame));
+                    scanner.increment(remainingFrame);
+                    break;
+                case "TBPM": case "TLEN": case "TDAT": case "TYER":
+                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    frame.value = parseInt(bytesToStr(scanner.extract(remainingFrame - 1)), 10);
+                    scanner.increment(remainingFrame);
+                    break;
+                case "PRIV":
+                    frame.id = bytesToStr(scanner.extract(remainingFrame - 1));
+                    scanner.increment(frame.id.length + 1);
+                    remainingFrame -= frame.id.length + 1;
+                    frame.value = scanner.extract(remainingFrame - 1 - frame.id.length);
+                    scanner.increment(frame.value.byteLength);
+                    break;
+                case "APIC":
+                    frame.useUnicodeEncoding = scanner.extract(1)[0]===1;
+                    frame.mimeType = bytesToStr(scanner.extract(remainingFrame - 1 - 1 - 1));
+                    scanner.increment(frame.mimeType.length + 1);
+                    remainingFrame -= frame.mimeType.length + 1;
+                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    frame.pictureType = scanner.extract(1)[0];
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    if (frame.useUnicodeEncoding) {
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length);
+                        remainingFrame -= UTFBOM.length;
+                        frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(frame.description.length + 2);
+                        remainingFrame -= frame.description.length + 2;
+                    } else {
+                        frame.description = bytesToStr(scanner.extract(remainingFrame - 1));
+                        scanner.increment(frame.description.length + 2);
+                        remainingFrame -= frame.description.length + 2;
+                    }
+                    frame.value = scanner.extract(remainingFrame);
+                    scanner.increment(frame.value.length);
+                    break;
+                case "IPLS":
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    /** @type {[string, number][]} */
+                    frame.value = [];
+                    while (remainingFrame > 0) {
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length);
+                        remainingFrame -= UTFBOM.length;
+                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(str.length + 2);
+                        remainingFrame -= str.length + 2;
+                        if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment([0, 0].concat(UTFBOM).length);
+                        remainingFrame -= [0, 0].concat(UTFBOM).length;
+                        const num = parseInt(bytesToStr(scanner.extract(remainingFrame - 2)), 10);
+                        scanner.increment(num.toString().length + 2);
+                        remainingFrame -= num.toString().length + 2;
+                        frame.value.push([str, num]);
+                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(2);
+                        remainingFrame -= 2;
+                    }
+                    break;
+                case "SYLT": 
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    frame.language = Array.from(scanner.extract(3));
+                    scanner.increment(3);
+                    remainingFrame -= 3;
+                    frame.timestampFormat = scanner.extract(1)[0];
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    frame.type = scanner.extract(1)[0];
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(UTFBOM.length);console.log();
+                    remainingFrame -= UTFBOM.length;
+                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                    scanner.increment(frame.description.length + 2);
+                    remainingFrame -= frame.description.length + 2;
+                    /** @type {[string, number][]} */
+                    frame.value = [];
+                    while (remainingFrame > 0) {
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length)
+                        remainingFrame -= UTFBOM.length;
+                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(str.length + 2)
+                        remainingFrame -= str.length + 2;
+                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(2)
+                        remainingFrame -= 2;
+                        const num = (scanner.extract(4)[0] << 24) + (scanner.extract(4)[1] << 16) + (scanner.extract(4)[2] << 8) + scanner.extract(4)[3];
+                        scanner.increment(4)
+                        remainingFrame -= 4;
+                        frame.value.push([str, num]);
+                    }
+                    break;
+                default:
+                    throw new Error(`Unsupported frame ${frame.name}`)
+            }
+            scanner.increment(remainingFrame)
+            frames.push(frame);
+        }
+        const remaining = scanner.remaining();
+        return { frames: frames, remaining: remaining.buffer };
+    }
+    /**
+     * @param {Uint8ArrayScanner} scanner 
+     * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
+     */
+    _readID3v2point4(scanner) {
+        scanner.reset();
+        /** @type {ID3Frame[]} */
+        const frames = [];
+        const ID33 = [73, 68, 51, 3];
+        if (!scanner.verify(ID33)) throw new Error("Invalid Version Number " + scanner.extract(4).join(","));//ID3v2.3.0
+        scanner.increment(ID33.length + 2);//FrameFlags (ignored)
+        const encodedLength = scanner.extract(4);
+        const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
+        scanner.increment(4);
+        if (decodedLength > scanner.Uint.length - scanner.scanned) throw new Error("Invalid tag length " + decodedLength);
+        const headerend = scanner.scanned;
+        while (scanner.scanned < headerend + decodedLength) {
+            /** @type {any} */
+            const frame = {};
+            const encodedFName = scanner.extract(4);
+            frame.name = bytesToStr(encodedFName);
+            if (!frame.name || frame.name === "\0\0\0\0") break;
+            if (!frame.name.match(/^[A-Z0-9]{4}$/)) throw new Error("Invalid frame name " + frame.name);
+            scanner.increment(4);
+            const encodedFSize = scanner.extract(4);
+            frame.size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
+            let remainingFrame = frame.size;
+            if (frame.size > decodedLength + headerend - scanner.scanned) throw new Error("Invalid frame size " + frame.size);
+            scanner.increment(4);
+            scanner.increment(2);//FrameFlags (ignored)
+            switch (frame.name) {
+                case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
+                    if (!scanner.verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment([1].concat(UTFBOM).length);
+                case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
+                    frame.value = bytesToStr(scanner.extract(remainingFrame - 1));
+                    scanner.increment(remainingFrame - 1);
+                    break;
+                case "TXXX": case "USLT": case "COMM":
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    if (frame.name != "TXXX") {
+                        frame.language = Array.from(scanner.extract(3));
+                        scanner.increment(3);
+                        remainingFrame -= 3;
+                    }
+                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(UTFBOM.length);
+                    remainingFrame -= UTFBOM.length;
+                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                    scanner.increment(frame.description.length + 2);
+                    remainingFrame -= frame.description.length + 2;
+                    if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment([0, 0].concat(UTFBOM).length);
+                    remainingFrame -= [0, 0].concat(UTFBOM).length;
+                    frame.value = bytesToStr(scanner.extract(remainingFrame));
+                    scanner.increment(remainingFrame);
+                    break;
+                case "TBPM": case "TLEN": case "TDAT": case "TYER":
+                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    frame.value = parseInt(bytesToStr(scanner.extract(remainingFrame - 1)), 10);
+                    scanner.increment(remainingFrame);
+                    break;
+                case "PRIV":
+                    frame.id = bytesToStr(scanner.extract(remainingFrame - 1));
+                    scanner.increment(frame.id.length + 1);
+                    remainingFrame -= frame.id.length + 1;
+                    frame.value = scanner.extract(remainingFrame - 1 - frame.id.length);
+                    scanner.increment(frame.value.byteLength);
+                    break;
+                case "APIC":
+                    frame.useUnicodeEncoding = scanner.extract(1)[0]===1;
+                    frame.mimeType = bytesToStr(scanner.extract(remainingFrame - 1 - 1 - 1));
+                    scanner.increment(frame.mimeType.length + 1);
+                    remainingFrame -= frame.mimeType.length + 1;
+                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    frame.pictureType = scanner.extract(1)[0];
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    if (frame.useUnicodeEncoding) {
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length);
+                        remainingFrame -= UTFBOM.length;
+                        frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(frame.description.length + 2);
+                        remainingFrame -= frame.description.length + 2;
+                    } else {
+                        frame.description = bytesToStr(scanner.extract(remainingFrame - 1));
+                        scanner.increment(frame.description.length + 2);
+                        remainingFrame -= frame.description.length + 2;
+                    }
+                    frame.value = scanner.extract(remainingFrame);
+                    scanner.increment(frame.value.length);
+                    break;
+                case "IPLS":
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    /** @type {[string, number][]} */
+                    frame.value = [];
+                    while (remainingFrame > 0) {
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length);
+                        remainingFrame -= UTFBOM.length;
+                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(str.length + 2);
+                        remainingFrame -= str.length + 2;
+                        if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment([0, 0].concat(UTFBOM).length);
+                        remainingFrame -= [0, 0].concat(UTFBOM).length;
+                        const num = parseInt(bytesToStr(scanner.extract(remainingFrame - 2)), 10);
+                        scanner.increment(num.toString().length + 2);
+                        remainingFrame -= num.toString().length + 2;
+                        frame.value.push([str, num]);
+                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(2);
+                        remainingFrame -= 2;
+                    }
+                    break;
+                case "SYLT": 
+                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    frame.language = Array.from(scanner.extract(3));
+                    scanner.increment(3);
+                    remainingFrame -= 3;
+                    frame.timestampFormat = scanner.extract(1)[0];
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    frame.type = scanner.extract(1)[0];
+                    scanner.increment(1);
+                    remainingFrame -= 1;
+                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                    scanner.increment(UTFBOM.length);console.log();
+                    remainingFrame -= UTFBOM.length;
+                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
+                    scanner.increment(frame.description.length + 2);
+                    remainingFrame -= frame.description.length + 2;
+                    /** @type {[string, number][]} */
+                    frame.value = [];
+                    while (remainingFrame > 0) {
+                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(UTFBOM.length)
+                        remainingFrame -= UTFBOM.length;
+                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
+                        scanner.increment(str.length + 2)
+                        remainingFrame -= str.length + 2;
+                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
+                        scanner.increment(2)
+                        remainingFrame -= 2;
+                        const num = (scanner.extract(4)[0] << 24) + (scanner.extract(4)[1] << 16) + (scanner.extract(4)[2] << 8) + scanner.extract(4)[3];
+                        scanner.increment(4)
+                        remainingFrame -= 4;
+                        frame.value.push([str, num]);
+                    }
+                    break;
+                default:
+                    throw new Error(`Unsupported frame ${frame.name}`)
+            }
+            scanner.increment(remainingFrame)
+            frames.push(frame);
+        }
+        const remaining = scanner.remaining();
+        return { frames: frames, remaining: remaining.buffer };
+    }
+    /**
+     * 
+     * @param {ArrayBuffer} arrayBuffer
+     * @returns {{ frames:ID3Frame[], remaining:ArrayBuffer }}
+     */
+    readTag(arrayBuffer) {
+        const scanner = this.newScanner(arrayBuffer);
+        const start = this._readID3v2(scanner);
+        const oldEnd = this._readID3v1(scanner);
+        const newEnd = this._readID3v2point4(scanner);
+        const allFrames = start.frames.concat(oldEnd.frames).concat(newEnd.frames);
+        //dedupe, prioritizing the first occurrence of each frame name
+        const deDupedFrames = allFrames.filter((frame, index, self) => index === self.findIndex((f) => f.name === frame.name));
+        const remaining = this.removeTags(arrayBuffer); 
+        return { frames: deDupedFrames, remaining: remaining};
     }
     getBlob() {
         return new Blob([this.arrayBuffer], {
