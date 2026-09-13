@@ -3,46 +3,59 @@
 /** @typedef {{ name: string, value: number, size: number }} integerFrame */
 /** 
  * @typedef {Object} ID3FrameMap
- * @property {{desc:"song artists",arg:{type:"TPE1",                                     data:string[]},                                                                                         frame:{name:"TPE1",value:string,size:number}}} TPE1
- * @property {{desc:"song composers",arg:{type:"TCOM",                                   data:string[]},                                                                                         frame:{name:"TCOM",value:string,size:number}}} TCOM
- * @property {{desc:"song genres",arg:{type:"TCON",                                      data:string[]},                                                                                         frame:{name:"TCON",value:string,size:number}}} TCON
- * @property {{desc:"language",arg:{type:"TLAN",                                         data:string},                                                                                           frame:{name:"TLAN",value:string,size:number}}} TLAN
- * @property {{desc:"content group description",arg:{type:"TIT1",                        data:string},                                                                                           frame:{name:"TIT1",value:string,size:number}}} TIT1
- * @property {{desc:"song title",arg:{type:"TIT2",                                       data:string},                                                                                           frame:{name:"TIT2",value:string,size:number}}} TIT2
- * @property {{desc:"song subtitle",arg:{type:"TIT3",                                    data:string},                                                                                           frame:{name:"TIT3",value:string,size:number}}} TIT3
- * @property {{desc:"album title",arg:{type:"TALB",                                      data:string},                                                                                           frame:{name:"TALB",value:string,size:number}}} TALB
- * @property {{desc:"album artist",arg:{type:"TPE2",                                     data:string},                                                                                           frame:{name:"TPE2",value:string,size:number}}} TPE2
- * @property {{desc:"conductor/performer refinement",arg:{type:"TPE3",                   data:string},                                                                                           frame:{name:"TPE3",value:string,size:number}}} TPE3
- * @property {{desc:"interpreted, remixed, or otherwise modified by",arg:{type:"TPE4",   data:string},                                                                                           frame:{name:"TPE4",value:string,size:number}}} TPE4
- * @property {{desc:"song number in album",arg:{type:"TRCK",                             data:string},                                                                                           frame:{name:"TRCK",value:string,size:number}}} TRCK
- * @property {{desc:"album disc number",arg:{type:"TPOS",                                data:string},                                                                                           frame:{name:"TPOS",value:string,size:number}}} TPOS
- * @property {{desc:"label name",arg:{type:"TPUB",                                       data:string},                                                                                           frame:{name:"TPUB",value:string,size:number}}} TPUB
- * @property {{desc:"initial key",arg:{type:"TKEY",                                      data:string},                                                                                           frame:{name:"TKEY",value:string,size:number}}} TKEY
- * @property {{desc:"media type",arg:{type:"TMED",                                       data:string},                                                                                           frame:{name:"TMED",value:string,size:number}}} TMED
- * @property {{desc:"album release date expressed as 'DDMM'",arg:{type:"TDAT",           data:string},                                                                                           frame:{name:"TDAT",value:string,size:number}}} TDAT
- * @property {{desc:"isrc - international standard recording code",arg:{type:"TSRC",     data:string},                                                                                           frame:{name:"TSRC",value:string,size:number}}} TSRC
- * @property {{desc:"software/hardware and settings used for encoding",arg:{type:"TSSE", data:string},                                                                                           frame:{name:"TSSE",value:string,size:number}}} TSSE
- * @property {{desc:"copyright message",arg:{type:"TCOP",                                data:string},                                                                                           frame:{name:"TCOP",value:string,size:number}}} TCOP
- * @property {{desc:"iTunes compilation flag",arg:{type:"TCMP",                          data:string},                                                                                           frame:{name:"TCMP",value:string,size:number}}} TCMP
- * @property {{desc:"lyricist / text writer",arg:{type:"TEXT",                           data:string},                                                                                           frame:{name:"TEXT",value:string,size:number}}} TEXT
- * @property {{desc:"commercial information",arg:{type:"WCOM",                           data:string},                                                                                           frame:{name:"WCOM",value:string,size:number}}} WCOM
- * @property {{desc:"copyright/Legal information",arg:{type:"WCOP",                      data:string},                                                                                           frame:{name:"WCOP",value:string,size:number}}} WCOP
- * @property {{desc:"official audio file webpage",arg:{type:"WOAF",                      data:string},                                                                                           frame:{name:"WOAF",value:string,size:number}}} WOAF
- * @property {{desc:"official artist/performer webpage",arg:{type:"WOAR",                data:string},                                                                                           frame:{name:"WOAR",value:string,size:number}}} WOAR
- * @property {{desc:"official audio source webpage",arg:{type:"WOAS",                    data:string},                                                                                           frame:{name:"WOAS",value:string,size:number}}} WOAS
- * @property {{desc:"official internet radio station homepage",arg:{type:"WORS",         data:string},                                                                                           frame:{name:"WORS",value:string,size:number}}} WORS
- * @property {{desc:"payment",arg:{type:"WPAY",                                          data:string},                                                                                           frame:{name:"WPAY",value:string,size:number}}} WPAY
- * @property {{desc:"publishers official webpage",arg:{type:"WPUB",                      data:string},                                                                                           frame:{name:"WPUB",value:string,size:number}}} WPUB
- * @property {{desc:"song duration in milliseconds",arg:{type:"TLEN",                    data:number},                                                                                           frame:{name:"TLEN",value:number,size:number}}} TLEN
- * @property {{desc:"album release year",arg:{type:"TYER",                               data:number},                                                                                           frame:{name:"TYER",value:number,size:number}}} TYER
- * @property {{desc:"beats per minute",arg:{type:"TBPM",                                 data:number},                                                                                           frame:{name:"TBPM",value:number,size:number}}} TBPM
+ * @property {{desc:"song artists",arg:{type:"TPE1",                                     data:string[]},      frame:{name:"TPE1",value:string,size:number}}} TPE1
+ * @property {{desc:"song composers",arg:{type:"TCOM",                                   data:string[]},      frame:{name:"TCOM",value:string,size:number}}} TCOM
+ * @property {{desc:"song genres",arg:{type:"TCON",                                      data:string[]},      frame:{name:"TCON",value:string,size:number}}} TCON
+ * @property {{desc:"language",arg:{type:"TLAN",                                         data:string},        frame:{name:"TLAN",value:string,size:number}}} TLAN
+ * @property {{desc:"content group description",arg:{type:"TIT1",                        data:string},        frame:{name:"TIT1",value:string,size:number}}} TIT1
+ * @property {{desc:"song title",arg:{type:"TIT2",                                       data:string},        frame:{name:"TIT2",value:string,size:number}}} TIT2
+ * @property {{desc:"song subtitle",arg:{type:"TIT3",                                    data:string},        frame:{name:"TIT3",value:string,size:number}}} TIT3
+ * @property {{desc:"album title",arg:{type:"TALB",                                      data:string},        frame:{name:"TALB",value:string,size:number}}} TALB
+ * @property {{desc:"Encoder Company",arg:{type:"TENC",                                  data:string},        frame:{name:"TENC",value:string,size:number}}} TENC
+ * @property {{desc:"recording time",arg:{type:"TDRC",                                   data:string},        frame:{name:"TDRC",value:string,size:number}}} TDRC
+ * @property {{desc:"album artist",arg:{type:"TPE2",                                     data:string},        frame:{name:"TPE2",value:string,size:number}}} TPE2
+ * @property {{desc:"conductor/performer refinement",arg:{type:"TPE3",                   data:string},        frame:{name:"TPE3",value:string,size:number}}} TPE3
+ * @property {{desc:"interpreted, remixed, or otherwise modified by",arg:{type:"TPE4",   data:string},        frame:{name:"TPE4",value:string,size:number}}} TPE4
+ * @property {{desc:"song number in album",arg:{type:"TRCK",                             data:string},        frame:{name:"TRCK",value:string,size:number}}} TRCK
+ * @property {{desc:"album disc number",arg:{type:"TPOS",                                data:string},        frame:{name:"TPOS",value:string,size:number}}} TPOS
+ * @property {{desc:"label name",arg:{type:"TPUB",                                       data:string},        frame:{name:"TPUB",value:string,size:number}}} TPUB
+ * @property {{desc:"initial key",arg:{type:"TKEY",                                      data:string},        frame:{name:"TKEY",value:string,size:number}}} TKEY
+ * @property {{desc:"media type",arg:{type:"TMED",                                       data:string},        frame:{name:"TMED",value:string,size:number}}} TMED
+ * @property {{desc:"album release date expressed as 'DDMM'",arg:{type:"TDAT",           data:string},        frame:{name:"TDAT",value:string,size:number}}} TDAT
+ * @property {{desc:"isrc - international standard recording code",arg:{type:"TSRC",     data:string},        frame:{name:"TSRC",value:string,size:number}}} TSRC
+ * @property {{desc:"software/hardware and settings used for encoding",arg:{type:"TSSE", data:string},        frame:{name:"TSSE",value:string,size:number}}} TSSE
+ * @property {{desc:"copyright message",arg:{type:"TCOP",                                data:string},        frame:{name:"TCOP",value:string,size:number}}} TCOP
+ * @property {{desc:"iTunes compilation flag",arg:{type:"TCMP",                          data:string},        frame:{name:"TCMP",value:string,size:number}}} TCMP
+ * @property {{desc:"lyricist / text writer",arg:{type:"TEXT",                           data:string},        frame:{name:"TEXT",value:string,size:number}}} TEXT
+ * @property {{desc:"commercial information",arg:{type:"WCOM",                           data:string},        frame:{name:"WCOM",value:string,size:number}}} WCOM
+ * @property {{desc:"copyright/Legal information",arg:{type:"WCOP",                      data:string},        frame:{name:"WCOP",value:string,size:number}}} WCOP
+ * @property {{desc:"official audio file webpage",arg:{type:"WOAF",                      data:string},        frame:{name:"WOAF",value:string,size:number}}} WOAF
+ * @property {{desc:"official artist/performer webpage",arg:{type:"WOAR",                data:string},        frame:{name:"WOAR",value:string,size:number}}} WOAR
+ * @property {{desc:"official audio source webpage",arg:{type:"WOAS",                    data:string},        frame:{name:"WOAS",value:string,size:number}}} WOAS
+ * @property {{desc:"official internet radio station homepage",arg:{type:"WORS",         data:string},        frame:{name:"WORS",value:string,size:number}}} WORS
+ * @property {{desc:"payment",arg:{type:"WPAY",                                          data:string},        frame:{name:"WPAY",value:string,size:number}}} WPAY
+ * @property {{desc:"publishers official webpage",arg:{type:"WPUB",                      data:string},        frame:{name:"WPUB",value:string,size:number}}} WPUB
+ * @property {{desc:"song duration in milliseconds",arg:{type:"TLEN",                    data:number},        frame:{name:"TLEN",value:number,size:number}}} TLEN
+ * @property {{desc:"album release year",arg:{type:"TYER",                               data:number},        frame:{name:"TYER",value:number,size:number}}} TYER
+ * @property {{desc:"beats per minute",arg:{type:"TBPM",                                 data:number},        frame:{name:"TBPM",value:number,size:number}}} TBPM
+ * @property {{desc:"play counter",arg:{type:"PCNT",                                     data:number},        frame:{name:"PCNT",value:number,size:number}}} PCNT
+ * @property {{desc:"recommended buffer size",arg:{type:"RBUF",                          data:{bufferSize:number,embeddedInfoFlag:boolean,offsetToNextTag:number}},                              frame:{name:"RBUF",size:number,bufferSize:number,embeddedInfoFlag:boolean,offsetToNextTag:number}}} RBUF
+ * @property {{desc:"equalisation",arg:{type:"EQUA",                                     data:Array<{adjustment:number,frequency:number}>},                                                      frame:{name:"EQUA",value:Array<{adjustment:number,frequency:number}>,size:number}}} EQUA
+ * @property {{desc:"event timing codes",arg:{type:"ETCO",                               data:Array<{type:number,timestamp:number}>},                                                            frame:{name:"ETCO",value:Array<{type:number,timestamp:number}>,size:number}}} ETCO
+ * @property {{desc:"general encapsulated object",arg:{type:"GEOB",                      data:{mimeType:string,filename:string,description:string,data:ArrayBuffer|ArrayLike<number>}},          frame:{name:"GEOB",mimeType:string,filename:string,description:string,value:ArrayBuffer|ArrayLike<number>,size:number}}} GEOB
+ * @property {{desc:"music cd identifier",arg:{type:"MCDI",                              data:ArrayBuffer|ArrayLike<number>},                                                                    frame:{name:"MCDI",value:ArrayBuffer|ArrayLike<number>,size:number}}} MCDI
+ * @property {{desc:"synced tempo codes",arg:{type:"STCO",                               data:Array<{tempo:number,timestamp:number}>},                                                           frame:{name:"STCO",value:Array<{tempo:number,timestamp:number}>,size:number}}} STCO
+ * @property {{desc:"unique file identifier",arg:{type:"UFID",                           data:{id:string,identifier:ArrayBuffer|ArrayLike<number>}},                                             frame:{name:"UFID",id:string,value:ArrayBuffer|ArrayLike<number>,size:number}}} UFID
+ * @property {{desc:"user defined url link frame",arg:{type:"WXXX",                      data:{description:string,url:string}},                                                                  frame:{name:"WXXX",description:string,value:string,size:number}}} WXXX
  * @property {{desc:"comments",arg:{type:"COMM",                                         data:{description?:string,text:string,language?:string}},                                               frame:{name:"COMM",value: string, language: number[], description: string, size: number}}} COMM
  * @property {{desc:"unsychronised lyrics",arg:{type:"USLT",                             data:{description?:string,lyrics:string,language?:string}},                                             frame:{name:"USLT",value: string, language: number[], description: string, size: number }}} USLT
  * @property {{desc:"involved people list",arg:{type:"IPLS",                             data:[string, number][]},                                                                               frame:{name:"IPLS",value: [string, number][], size:number}}} IPLS
  * @property {{desc:"synchronised lyrics",arg:{type:"SYLT",                              data:{type:number,text:[string,number][],timestampFormat:number,language?:string,description?:string}}, frame:{name:"SYLT",value: [string, number][]; language: number[]; description: string; type: number; timestampFormat: number; size: number; }}} SYLT
  * @property {{desc:"user defined text",arg:{type:"TXXX",                                data:{description?:string,value:string}},                                                               frame:{name:"TXXX",description: string, value: string, size: number}}} TXXX
  * @property {{desc:"private frame",arg:{type:"PRIV",                                    data:{id:string,data:ArrayBuffer | ArrayLike<number>}},                                                 frame:{name:"PRIV",value: ArrayBuffer | ArrayLike<number>, id: string, size: number}}} PRIV
- * @property {{desc:"attached picture",arg:{type:"APIC",                                 data:{type:number,data:ArrayBuffer,description?:string,useUnicodeEncoding?:boolean}},                   frame:{name:"APIC",value: ArrayBuffer | ArrayLike<number>, pictureType: number, mimeType: "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "image/tiff" | "image/bmp" | "image/x-icon", useUnicodeEncoding?: boolean, description: string, size: number}}} APIC
+ * @property {{desc:"attached picture",arg:{type:"APIC",                                 data:{type:number,data:ArrayBuffer,description?:string,useUnicodeEncoding?:boolean}},                   frame:{name:"APIC",value: ArrayBuffer | ArrayLike<number>, pictureType: number, mimeType: string, useUnicodeEncoding?: boolean, description: string, size: number}}} APIC
+ * @property {{desc:"mpeg location lookup table",arg:{type:"MLLT",                       data:{framesBetweenReference:number,bytesBetweenReference:number,millisecondsBetweenReference:number,devianceBits:number,deviations:number[]}},          frame:{name:"MLLT",framesBetweenReference:number,bytesBetweenReference:number,millisecondsBetweenReference:number,devianceBits:number,deviations:number[],size:number}}} MLLT
+ * @property {{desc:"relative volume adjustment",arg:{type:"RVAD",                       data:{increment:boolean, bitsUsed:number, channels: Array<{channel: number, volumeChange: number, peakVolume?: ArrayBuffer | ArrayLike<number>}>}},      frame:{name:"RVAD", value: {increment:boolean, bitsUsed:number, channels: Array<{channel: number, volumeChange: number, peakVolume?: ArrayBuffer | ArrayLike<number>}>}, size:number}}} RVAD
  */
 /** @typedef {keyof ID3FrameMap} ID3FrameType */
 /** @typedef {{ [K in ID3FrameType]: ID3FrameMap[K]['desc']; }} ID3FrameDescriptions */
@@ -108,39 +121,75 @@
  * @property {Uint8Array<ArrayBuffer>} Uint
  * @property {number} scanned
  * @property {(set: ArrayLike<number>, depth?: number) => boolean} verify
+ * @property {(n: number) => void} setpos
  * @property {(length: number, depth?: number) => Uint8Array} extract
  * @property {(n: number) => void} increment
  * @property {() => void} reset
  * @property {(n: number) => void} backtrack
  * @property {() => Uint8Array<ArrayBuffer>} remaining
  */
-
-const UTFBOM = [255, 254];
 /**
  * @param {string} e
  */
 function charCodes(e) {
     return String(e).split("").map(e => e.charCodeAt(0))
 }
+
 /**
  * @param {string} t
+ * @param {number} [e]
+ * @returns {Uint8Array}
  */
-function strToBytes(t) {
-    return new Uint8Array(charCodes(t))
+function strToBytes(t,e=0) {
+    switch (e) {
+        case 0:
+            return new Uint8Array([...t.split("").map(c=>c.charCodeAt(0) & 0xFF),0]);
+        case 1:
+            return new Uint8Array([0xFF, 0xFE, ...t.split("").flatMap(c=>[c.charCodeAt(0) & 0xFF,(c.charCodeAt(0) >> 8) & 0xFF]),0,0]);
+        case 2:
+            return new Uint8Array([0xFE, 0xFF, ...t.split("").flatMap(c=>[(c.charCodeAt(0) >> 8) & 0xFF,c.charCodeAt(0) & 0xFF]),0,0]);
+        case 3:
+            return new TextEncoder().encode(t+"\0");
+        default:
+            throw Error("Encoding Bit Not Valid:'" + e + "'");
+    }
 }
 /**
  * @param {Uint8Array} t
- * @returns {string}
+ * @param {number} [e] encoding
+ * @returns {[number,string]}
  */
-function bytesToStr(t) {
-    return String.fromCharCode(...t);
+function extractStr(t,e=3) {
+    const is16Bit = e>0 && e<3;
+    const len = t.findIndex((v,i,r)=>is16Bit?(v===0 && r[i+1]===0 && i%2===0):v===0);
+    if (len<0) console.warn("Missing Null Terminator, interpreting all as string.");
+    return [len, bytesToStr(t.slice(0,len),e)];
 }
 /**
- * @param {string} t
+ * @param {Uint8Array} t
+ * @param {number} [e]
+ * @returns {string}
  */
-function utf16String(t) {
-    const a = new ArrayBuffer(2 * t.length), r = new Uint8Array(a);
-    return new Uint16Array(a).set(charCodes(t)), r
+function bytesToStr(t,e=0) {
+    switch (e) {
+        case 0:
+            return new TextDecoder('iso-8859-1').decode(t);
+        case 1:
+            if (t.length < 2) return "";
+            const BOM = t.slice(0,2);
+            t = t.slice(2);
+            if (BOM[0] === 0xFF && BOM[1] === 0xFE) {
+                return new TextDecoder('utf-16le').decode(t);
+            } else if (BOM[0] !== 0xFE || BOM[1] !== 0xFF) {
+                throw Error("UTFBOM '" + BOM + "' is not valid.");
+            }
+        case 2: // FALL THROUGH FROM ABOVE IF be
+            return new TextDecoder('utf-16be').decode(t);
+        case 3:
+            return new TextDecoder('utf-8').decode(t);
+        default:
+            throw Error("Encoding Bit Not Valid:'" + e + "'");
+    }
 }
 /**
  * @param {number} e
@@ -186,6 +235,568 @@ function syncLyricsFrameSize(e, t) {
     }
     ), 18 + a + 2 + r
 }
+/**
+ * @param {Uint8Array|ArrayBuffer} arrayBuffer
+ * @returns {Uint8ArrayScanner}
+ */
+function newScanner(arrayBuffer) {
+    /** @type {Uint8ArrayScanner} */
+    const scanner = {
+        Uint: new Uint8Array(arrayBuffer),
+        scanned: 0,
+        verify: (set, depth) => scanner.Uint.subarray(depth ?? scanner.scanned, (depth ?? scanner.scanned) + set.length).every((e, i) => e === set[i]),
+        extract: (length, depth) => scanner.Uint.subarray(depth ?? scanner.scanned, (depth ?? scanner.scanned) + length),
+        increment: (n) => { scanner.scanned += n; },
+        reset: () => { scanner.scanned = 0; },
+        setpos: (n) => { scanner.scanned = n; },
+        backtrack: (n) => { scanner.scanned -= n; },
+        remaining: () => scanner.Uint.subarray(scanner.scanned)
+    };
+    return scanner;
+}
+/**
+ * 
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {{ frames:ID3Frame[], remaining:ArrayBuffer }}
+ */
+function readTag(arrayBuffer) {
+    const start = _readID3v2(arrayBuffer);
+    const oldEnd = _readID3v1(arrayBuffer);
+    const newEnd = _readID3v2point4(arrayBuffer);
+    const allFrames = start.frames.concat(oldEnd.frames).concat(newEnd.frames);
+    //dedupe, prioritizing the first occurrence of each frame name
+    const deDupedFrames = allFrames.filter((frame, index, self) => index === self.findIndex((f) => f.name === frame.name));
+    const remaining = removeTags(arrayBuffer); 
+    return { frames: deDupedFrames, remaining: remaining};
+}
+/** @typedef {{name:ID3Frame["name"], size:number, ab:ArrayBuffer}} RawFrame */
+/**
+ * @param {ArrayBuffer} arrayBuffer 
+ * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
+ */
+function _readID3v2(arrayBuffer) {
+    const scanner = newScanner(arrayBuffer);
+    if (!scanner.verify(charCodes("ID3"))) {
+        // No ID3v2 tag found, don't error, just return no frames.
+        return { frames: [], remaining: arrayBuffer };
+    }
+    scanner.increment(3);//"ID3"
+    const [version,subversion,flags] = scanner.extract(3);
+    scanner.increment(3);//Version,subversion,flags
+    const encodedLength = scanner.extract(4);
+    const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
+    scanner.increment(4);
+    const frames = _parseID3v2Frames(arrayBuffer.slice(scanner.scanned, scanner.scanned + decodedLength), version);
+    const remaining = scanner.remaining().buffer;
+    return { frames, remaining };
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer 
+ * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
+ */
+function _readID3v1(arrayBuffer) {
+    const scanner = newScanner(arrayBuffer);
+    scanner.setpos(scanner.Uint.length-128);
+    if (!scanner.verify(charCodes("TAG"),scanner.Uint.length-128)) {
+        // no ID3v1 tag found, don't error, just return no frames.
+        return { frames: [], remaining: arrayBuffer };
+    }
+    scanner.increment(3);//"TAG"
+    const title = bytesToStr(scanner.extract(30)).replace(/\0/g, "");
+    scanner.increment(30);
+    const artist = bytesToStr(scanner.extract(30)).replace(/\0/g, "");
+    scanner.increment(30);
+    const album = bytesToStr(scanner.extract(30)).replace(/\0/g, "");
+    scanner.increment(30);
+    const year = bytesToStr(scanner.extract(4)).replace(/\0/g, "");
+    scanner.increment(4);
+    const hasTrack = scanner.extract(1,scanner.scanned+28)[0] === 0; //ID3v1.1 has '28 comment, 1 test, 1 track', ID3v1 has '30 comment'
+    const comment = bytesToStr(scanner.extract(28+(hasTrack?0:2))).replace(/\0/g, "");
+    scanner.increment(28+(hasTrack?0:2));
+    const track = hasTrack ? scanner.extract(2)[1] : 0; // ID3v1.0 has no track number, ID3v1.1 has 0,trck as last 2 bytes of comment
+    if (hasTrack) scanner.increment(2); //all 0 byte delim and track byte, if applicable
+    const genre = scanner.extract(1)[0];
+    scanner.increment(1);
+    if (scanner.scanned !== scanner.Uint.length) debugger;
+    const frames = [];
+    title && frames.push(_genStringFrame("TIT2", title));
+    artist && frames.push(_genStringFrame("TPE1", artist));
+    album && frames.push(_genStringFrame("TALB", album));
+    year && frames.push(_genIntegerFrame("TYER", year));
+    comment && frames.push({..._genStringFrame("COMM", comment), description: "", language: [101, 110, 103]});
+    track && frames.push(_genStringFrame("TRCK", track + ""));
+    const genremap = ["Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk", "Grunge", "Hip-Hop", "Jazz", "Metal", "New Age", "Oldies", "Other", "Pop", "R&B", "Rap", "Reggae", "Rock", "Techno", "Industrial", "Alternative", "Ska", "Death Metal", "Pranks", "Soundtrack", "Euro-Techno", "Ambient", "Trip-Hop", "Vocal", "Jazz+Funk", "Fusion", "Trance", "Classical", "Instrumental", "Acid", "House", "Game", "Sound Clip", "Gospel", "Noise", "Alternative Rock", "Bass", "Soul", "Punk", "Space", "Meditative", "Instrumental Pop", "Instrumental Rock", "Ethnic", "Gothic", "Darkwave", "Techno-Industrial", "Electronic", "Pop-Folk", "Eurodance", "Dream", "Southern Rock", "Comedy", "Cult", "Gangsta Rap", "Top 40", "Christian Rap", "Pop/Funk", "Jungle", "Native American", "Cabaret", "New Wave", "Psychedelic", "Rave", "Showtunes", "Trailer", "Lo-Fi", "Tribal", "Acid Punk", "Acid Jazz", "Polka", "Retro", "Musical", "Rock & Roll", "Hard Rock", "Folk", "Folk-Rock", "National Folk", "Swing", "Fast Fusion", "Bebob", "Latin", "Revival", "Celtic", "Bluegrass", "Avantgarde", "Gothic Rock", "Progressive Rock", "Psychedelic Rock", "Symphonic Rock", "Slow Rock", "Big Band", "Chorus", "Easy Listening", "Acoustic", "Humour", "Speech", "Chanson", "Opera", "Chamber Music", "Sonata", "Symphony", "Booty Bass", "Primus", "Porn Groove", "Satire", "Slow Jam", "Club", "Tango", "Samba", "Folklore", "Ballad", "Power Ballad", "Rhythmic Soul", "Freestyle", "Duet", "Punk Rock", "Drum Solo", "A Cappella", "Euro-House", "Dance Hall", "Goa", "Drum & Bass", "Club-House", "Hardcore", "Terror", "Indie", "BritPop", "Negerpunk", "Polsk Punk", "Beat", "Christian Gangsta Rap", "Heavy Metal", "Black Metal", "Crossover", "Contemporary Christian", "Christian Rock", "Merengue", "Salsa", "Thrash Metal", "Anime", "JPop", "Synthpop", "Abstract", "Art Rock", "Baroque", "Bhangra", "Big Beat", "Breakbeat", "Chillout", "Downtempo", "Dub", "EBM", "Eclectic", "Electro", "Electroclash", "Emo", "Experimental", "Garage", "Global", "IDM", "Illbient", "Industro-Goth", "Jam Band", "Krautrock", "Leftfield", "Lounge", "Math Rock", "New Romantic", "Nu-Breakz", "Post-Punk", "Post-Rock", "Psytrance", "Shoegaze", "Space Rock", "Trop Rock", "World Music", "Neoclassical", "Audiobook", "Audio Theatre", "Neue Deutsche Welle", "Podcast", "Indie Rock", "G-Funk", "Dubstep", "Garage Rock", "Psybient"];
+    genre && frames.push(_genStringFrame("TCON", genremap[genre] ?? ("Other, ID" + genre)));
+    return { frames: frames, remaining: arrayBuffer.slice(0, scanner.Uint.length-128) };
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer 
+ * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
+ */
+function _readID3v2point4(arrayBuffer) {
+    const scanner = newScanner(arrayBuffer);
+    const isOldEnd = scanner.verify(charCodes("TAG"),scanner.Uint.length-128);
+    scanner.setpos(scanner.Uint.length-(isOldEnd?138:10));
+    if (!scanner.verify(charCodes("3DI"))) {
+        // no ID3v2.4 trailing tag found, don't error, just return no frames.
+        return { frames: [], remaining: arrayBuffer };
+    }
+    scanner.increment(3);//"3DI"
+    const [version,subversion,flags] = scanner.extract(3);
+    scanner.increment(3);//Version,subversion,flags
+    const encodedLength = scanner.extract(4);
+    const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
+    scanner.increment(4);
+    scanner.backtrack(10);//backtrack to the start of the header
+    scanner.backtrack(decodedLength);//backtrack to the start of the frames
+    const frames = _parseID3v2Frames(arrayBuffer.slice(scanner.scanned, scanner.scanned + decodedLength), version);
+    const remaining = arrayBuffer.slice(0, scanner.scanned);
+    return { frames, remaining };
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer JUST THE FRAMES, NO HEADER, NO END DATA
+ * @param {number} [version] required to handle v2.2 or v2.1, just the 2 or 1
+ * @returns {ID3Frame[]}
+ */
+function _parseID3v2Frames(arrayBuffer, version = 3) {
+    const allframesScanner = newScanner(arrayBuffer);
+    const pre3 = version < 3;
+    /** @type {RawFrame[]} */
+    const rawFrames = [];
+    while (allframesScanner.scanned < allframesScanner.Uint.length) {
+        let name = bytesToStr(allframesScanner.extract(pre3 ? 3:4));
+        if (!name || name === "\0\0\0\0" || name === "\0\0\0") break;
+        if (!name.match(new RegExp("^[A-Z0-9]{"+(pre3?3:4)+"}$"))) throw new Error("Invalid frame name " + name);
+        if (pre3) {
+            /** @type {Record<String,ID3Frame["name"]>} */
+            const pre3Frames = { /* TEXT FRAMES */ /* Title */ "TT2": "TIT2", /* Artist */ "TP1": "TPE1", /* Album */ "TAL": "TALB", /* Track number */ "TRK": "TRCK", /* Year */ "TYE": "TYER", /* Genre */ "TCO": "TCON", /* Album Artist / Band */ "TP2": "TPE2", /* Composer */ "TCM": "TCOM", /* Lyricist */ "TXT": "TEXT", /* Initial key */ "TKE": "TKEY", /* Language */ "TLA": "TLAN", /* Length */ "TLE": "TLEN", /* Publisher */ "TPB": "TPUB", /* ISRC */ "TRC": "TSRC", /* Part of set */ "TPA": "TPOS", /* Content group */ "TT1": "TIT1", /* Subtitle */ "TT3": "TIT3", /* Media type */ "TMT": "TMED", /* Encoded by */ "TEN": "TENC", /* COMMENTS & LYRICS */ /* Comments */ "COM": "COMM", /* Synchronized lyrics */ "SLT": "SYLT", /* URL FRAMES */ "WCM": "WCOM", "WCP": "WCOP", "WAF": "WOAF", "WAR": "WOAR", "WAS": "WOAS", "WPB": "WPUB", /* SPECIAL / COMPLEX FRAMES */ /* Involved people list */ "IPL": "IPLS", /* Attached picture */ "PIC": "APIC", /* Buffer size*/ "BUF": "RBUF", /* Play counter*/ "CNT": "PCNT", /* Equalization */ "EQU": "EQUA", /* Event Timing */ "ETC": "ETCO", /* File In Tag */ "GEO": "GEOB", /* CD ID*/ "MCI": "MCDI", /* MPEG Lookup Table */ "MLL": "MLLT", /* Relative Volume */ "RVA": "RVAD", /* TempoSync */ "STC": "STCO", /* Unsynced lyrics */ "ULT": "USLT", /* File UID */ "UFI": "UFID", /* Custom URL */ "WXX": "WXXX" };
+            name = pre3Frames[name] ?? (name + " ");
+        }
+        allframesScanner.increment(pre3?3:4);
+        const encodedFSize = [...(pre3?[0]:[]),...allframesScanner.extract(pre3?3:4)];
+        const size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
+        if (size > allframesScanner.Uint.length - allframesScanner.scanned) throw new Error("Invalid frame size " + size);
+        allframesScanner.increment(pre3?3:4);
+        const arrayBuffer = allframesScanner.extract(size + (pre3?0:2));
+        /** @type {RawFrame} */
+        let f = {
+            // @ts-ignore
+            name,
+            size,
+            arrayBuffer
+        };
+        rawFrames.push(f);
+    }
+    /** @type {ID3Frame[]} */
+    return rawFrames.map(rf=>parseFrame(rf,pre3));
+}
+/** 
+ * @param {RawFrame} rawFrame
+ * @param {boolean} pre3
+ * @returns {ID3Frame}
+ */
+function parseFrame(rawFrame, pre3) {
+    const fscn = newScanner(rawFrame.ab);
+    const frameFlags = pre3?[0,0]:fscn.extract(2);
+    pre3 || fscn.increment(2);//FrameFlags not in pre-v2.3
+    switch (rawFrame.name) {
+        case "TPE1": case "TDAT": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC": case "TDRC": case "TENC": case "TCMP":{
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                const [l, value] = extractStr(fscn.remaining(), e);
+                fscn.increment(l);
+                return { name:rawFrame.name, size:rawFrame.size, value };
+            }
+        case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB": {
+                const [l, value] = extractStr(fscn.remaining(),0);
+                fscn.increment(l);
+                return { name:rawFrame.name, size:rawFrame.size, value };
+            }
+        case "TXXX": case "WXXX": case "USLT": case "COMM": {
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                const language = (rawFrame.name === "USLT" || rawFrame.name === "COMM") ? // TXXX and WXXX don't have lang code;
+                    [...fscn.extract(3)]:[];
+                language.length===0 || fscn.increment(3);
+                const [dl, description] = extractStr(fscn.remaining(),e);
+                fscn.increment(dl);
+                const [vl, value] = extractStr(fscn.remaining(),(rawFrame.name === "WXXX") ? 3:e); //URL of WXXX is not encoded.
+                fscn.increment(vl);
+                return (rawFrame.name === "USLT" || rawFrame.name === "COMM") ?
+                { name:rawFrame.name, size:rawFrame.size, value, description, language }:
+                { name:rawFrame.name, size:rawFrame.size, value, description };
+            }
+        case "TBPM": case "TLEN": case "TYER": case "PCNT": {
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                const [vl, valueStr] = extractStr(fscn.remaining(),e);
+                const value = parseInt(valueStr, 10);
+                fscn.increment(vl);
+                return { name:rawFrame.name, size:rawFrame.size, value };
+            }
+        case "PRIV": case "UFID": {
+                const [il, id] = extractStr(fscn.remaining(),0);
+                fscn.increment(il);
+                const value = fscn.remaining();
+                fscn.increment(value.byteLength);
+                return { name:rawFrame.name, size:rawFrame.size, value, id };
+            }
+        case "APIC": {
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                const [ml,mimeType] = extractStr(fscn.remaining(),e);
+                fscn.increment(ml);
+                const pictureType = fscn.extract(1)[0];
+                fscn.increment(1);
+                const [dl,description] = extractStr(fscn.remaining(), e);
+                fscn.increment(dl);
+                const value = fscn.remaining();
+                fscn.increment(value.byteLength);
+                return { name:rawFrame.name, size:rawFrame.size, value, description, pictureType, mimeType };
+            }
+        case "IPLS": {
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                /** @type {[string, number][]} */
+                const value = [];
+                while (fscn.scanned<fscn.Uint.byteLength) {
+                    const [sl,str] = extractStr(fscn.remaining(), e);
+                    fscn.increment(sl);
+                    const [nl,ns] = extractStr(fscn.remaining(), e);
+                    const num = parseInt(ns, 10);
+                    fscn.increment(nl);
+                    value.push([str, num]);
+                }
+                return { name:rawFrame.name, size:rawFrame.size, value };
+            }
+        case "SYLT": {
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                const language = [...fscn.extract(3)];
+                fscn.increment(3);
+                const timestampFormat = fscn.extract(1)[0];
+                fscn.increment(1);
+                const type = fscn.extract(1)[0];
+                fscn.increment(1);
+                const [dl, description] = extractStr(fscn.remaining(), e);
+                fscn.increment(dl);
+                /** @type {[string, number][]} */
+                const value = [];
+                while (fscn.scanned<fscn.Uint.byteLength) {
+                    const [sl,str] = extractStr(fscn.remaining(), e);
+                    fscn.increment(sl);
+                    const num = (fscn.extract(4)[0] << 24) + (fscn.extract(4)[1] << 16) + (fscn.extract(4)[2] << 8) + fscn.extract(4)[3];
+                    fscn.increment(4);
+                    value.push([str, num]);
+                }
+                return { name:rawFrame.name, size:rawFrame.size, value, language, timestampFormat, type, description };
+            }
+        case "STCO": {
+                const timeStampFormat = fscn.extract(1)[0];
+                fscn.increment(1);
+                /** @type {{ tempo: number, timestamp: number }[]} */
+                const value = [];
+                while (fscn.scanned < fscn.Uint.byteLength) {
+                    const tempo = fscn.extract(1)[0];
+                    fscn.increment(1);
+                    const timestamp = (fscn.extract(4)[0] << 24) | (fscn.extract(4)[1] << 16) | (fscn.extract(4)[2] << 8) | fscn.extract(4)[3];
+                    fscn.increment(4);
+                    value.push({ tempo, timestamp });
+                }
+                return { name: rawFrame.name, size: rawFrame.size, value };
+            }
+        case "MLLT": {
+                const fBRBytes = fscn.extract(2); fscn.increment(2);
+                const framesBetweenReference = (fBRBytes[0] << 8) | fBRBytes[1];
+                const bBRBytes = fscn.extract(3); fscn.increment(3);
+                const bytesBetweenReference = (bBRBytes[0] << 16) | (bBRBytes[1] << 8) | bBRBytes[2];
+                const mBRBytes = fscn.extract(3); fscn.increment(3);
+                const millisecondsBetweenReference = (mBRBytes[0] << 16) | (mBRBytes[1] << 8) | mBRBytes[2];
+                const devianceBits = fscn.extract(1)[0]; fscn.increment(1);
+                fscn.increment(2); // skip bitsForBytes & bitsForMillis
+                /** @type {number[]} */
+                const deviations = [];
+                const rem = fscn.remaining();
+                fscn.increment(rem.byteLength);
+                return { name: rawFrame.name, size: rawFrame.size, framesBetweenReference, bytesBetweenReference, millisecondsBetweenReference, devianceBits, deviations };
+            }
+        case "RVAD": {
+                const flags = fscn.extract(1)[0];
+                fscn.increment(1);
+                const increment = (flags & 0x01) !== 0;
+                const bitsUsed = (flags >> 1) & 0x07;
+                /** @type {Array<{ channel: number, volumeChange: number, peakVolume?: ArrayBuffer | ArrayLike<number> }>} */
+                const channels = [];
+                const value = { increment, bitsUsed, channels };
+                const rem = fscn.remaining();
+                fscn.increment(rem.byteLength);
+                return { name: rawFrame.name, size: rawFrame.size, value };
+            }
+        case "RBUF": {
+                const bBytes = fscn.extract(3);
+                fscn.increment(3);
+                const bufferSize = (bBytes[0] << 16) | (bBytes[1] << 8) | bBytes[2];
+                const flagBytes = fscn.extract(1)[0];
+                fscn.increment(1);
+                const embeddedInfoFlag = (flagBytes & 0x02) !== 0;
+                const oBytes = fscn.extract(4);
+                fscn.increment(4);
+                const offsetToNextTag = (oBytes[0] << 24) | (oBytes[1] << 16) | (oBytes[2] << 8) | oBytes[3];
+                return { name: rawFrame.name, size: rawFrame.size, bufferSize, embeddedInfoFlag, offsetToNextTag };
+            }
+        case "EQUA": {
+                const adjustmentBits = fscn.extract(1)[0];
+                fscn.increment(1);
+                /** @type {{ adjustment: number, frequency: number }[]} */
+                const value = [];
+                while (fscn.scanned < fscn.Uint.byteLength) {
+                    const freqBytes = fscn.extract(2);
+                    fscn.increment(2);
+                    const frequency = ((freqBytes[0] & 0x7F) << 8) | freqBytes[1];
+                    const inc = (freqBytes[0] & 0x80) !== 0;
+                    const adjBytesLen = Math.ceil(adjustmentBits / 8);
+                    const adjBytes = fscn.extract(adjBytesLen);
+                    fscn.increment(adjBytesLen);
+                    let adjustment = 0;
+                    for (let i = 0; i < adjBytesLen; i++) {
+                        adjustment = (adjustment << 8) | adjBytes[i];
+                    }
+                    if (!inc) adjustment = -adjustment;
+                    value.push({ adjustment, frequency });
+                }
+                return { name: rawFrame.name, size: rawFrame.size, value };
+            }
+        case "ETCO": {
+                const timeStampFormat = fscn.extract(1)[0];
+                fscn.increment(1);
+                /** @type {{ type: number, timestamp: number }[]} */
+                const value = [];
+                while (fscn.scanned < fscn.Uint.byteLength) {
+                    const type = fscn.extract(1)[0];
+                    fscn.increment(1);
+                    const timestamp = (fscn.extract(4)[0] << 24) | (fscn.extract(4)[1] << 16) | (fscn.extract(4)[2] << 8) | fscn.extract(4)[3];
+                    fscn.increment(4);
+                    value.push({ type, timestamp });
+                }
+                return { name: rawFrame.name, size: rawFrame.size, value };
+            }
+        case "GEOB": {
+                const e = fscn.extract(1)[0];
+                fscn.increment(1);
+                const [ml, mimeType] = extractStr(fscn.remaining(), 0);
+                fscn.increment(ml);
+                const [fl, filename] = extractStr(fscn.remaining(), e);
+                fscn.increment(fl);
+                const [dl, description] = extractStr(fscn.remaining(), e);
+                fscn.increment(dl);
+                const value = fscn.remaining();
+                fscn.increment(value.byteLength);
+                return { name: rawFrame.name, size: rawFrame.size, value, mimeType, filename, description };
+            }
+        case "MCDI": {
+                const value = fscn.remaining();
+                fscn.increment(value.byteLength);
+                return { name: rawFrame.name, size: rawFrame.size, value };
+            }
+        default:
+            /** @type {undefined} */
+            const u = rawFrame.name;
+            throw new Error(`Unsupported frame ${u}.`);
+    }
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ */
+function removeTags(arrayBuffer) {
+    const scanner = newScanner(arrayBuffer);
+    const isStart = scanner.verify(charCodes("ID3"));
+    const isOldEnd = scanner.verify(charCodes("TAG"),scanner.Uint.length-128);
+    const isNewEnd = scanner.verify(charCodes("3DI"),scanner.Uint.length-(isOldEnd?138:10));
+    if ((isStart || isOldEnd || isNewEnd) && (arrayBuffer.byteLength < 10)) {
+        throw new Error("Corrupted ID3 tag, file too small.");
+    }
+    let [newStart, newEnd] = [0, arrayBuffer.byteLength];
+    if (isStart) {
+        if (arrayBuffer.byteLength < 10) throw new Error("Invalid ID3v2 tag");
+        const sizeBits = scanner.extract(4, 6),
+        size = (sizeBits[0] << 21) + (sizeBits[1] << 14) + (sizeBits[2] << 7) + sizeBits[3] + 10;
+        newStart = size;
+    }
+    if (isOldEnd) {
+        if (arrayBuffer.byteLength < 128) throw new Error("Invalid ID3v1 tag");
+        newEnd -= 128;
+    }
+    if (isNewEnd) {
+        if (arrayBuffer.byteLength < 10) throw new Error("Invalid ID3v2 tag");
+        const sizeBits = scanner.extract(4, newEnd - 6),
+        size = (sizeBits[0] << 21) + (sizeBits[1] << 14) + (sizeBits[2] << 7) + sizeBits[3] + 10;
+        newEnd -= size;
+    }
+    if (newStart >= newEnd) throw new Error("Corrupted ID3 tag, file too small for detected tags.");
+    return arrayBuffer.slice(newStart, newEnd);
+}
+/**
+ * @template {ID3FrameType} K
+ * @param {ID3FrameArg} dummyFrame 
+ * @returns {ID3Frame}
+ */
+function genFrame(dummyFrame) {
+    switch (dummyFrame.type) {
+        case "TPE1": case "TCOM": case "TCON": {
+            if (!Array.isArray(dummyFrame.data)) throw new Error(`${dummyFrame.type} frame value should be an array of strings`);
+            return _genStringFrame(dummyFrame.type, dummyFrame.data.join("TCON" === dummyFrame.type ? ";" : " / "));
+        }
+        case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TMED": case "TPUB": case "TCOP": case "TKEY": case "TEXT": case "TDAT": case "TCMP": case "TSSE": case "TSRC":
+            return _genStringFrame(dummyFrame.type, dummyFrame.data);
+        case "TBPM": case "TLEN": case "TYER":
+            return _genIntegerFrame(dummyFrame.type, dummyFrame.data);
+        case "USLT": 
+            if (dummyFrame.data.language = dummyFrame.data.language || "eng", "object" != typeof dummyFrame.data || !("description" in dummyFrame.data) || !("lyrics" in dummyFrame.data)) throw new Error("USLT frame value should be an object with keys description and lyrics");
+            if (dummyFrame.data.language && !dummyFrame.data.language.match(/[a-z]{3}/i)) throw new Error("Language must be coded following the ISO 639-2 standards");
+            return _genLyricsFrame(dummyFrame.data.language, dummyFrame.data.description || "", dummyFrame.data.lyrics);
+        case "APIC":
+            if ("object" != typeof dummyFrame.data || !("type" in dummyFrame.data) || !("data" in dummyFrame.data) || !("description" in dummyFrame.data)) throw new Error("APIC frame value should be an object with keys type, data and description");
+            if (dummyFrame.data.type < 0 || dummyFrame.data.type > 20) throw new Error("Incorrect APIC frame picture type");
+            return _genPictureFrame(dummyFrame.data.type, dummyFrame.data.data, dummyFrame.data.description || "", !!dummyFrame.data.useUnicodeEncoding);
+        case "TXXX": 
+            if ("object" != typeof dummyFrame.data || !("description" in dummyFrame.data) || !("value" in dummyFrame.data)) throw new Error("TXXX frame value should be an object with keys description and value");
+            return _genUserStringFrame(dummyFrame.data.description || "", dummyFrame.data.value);
+        case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB": 
+            return _genUrlLinkFrame(dummyFrame.type, dummyFrame.data);
+        case "COMM": 
+            if (dummyFrame.data.language = dummyFrame.data.language || "eng", "object" != typeof dummyFrame.data || !("description" in dummyFrame.data) || !("text" in dummyFrame.data)) throw new Error("COMM frame value should be an object with keys description and text");
+            if (dummyFrame.data.language && !dummyFrame.data.language.match(/[a-z]{3}/i)) throw new Error("Language must be coded following the ISO 639-2 standards");
+            return _genCommentFrame(dummyFrame.data.language, dummyFrame.data.description || "", dummyFrame.data.text);
+        case "PRIV": 
+            if ("object" != typeof dummyFrame.data || !("id" in dummyFrame.data) || !("data" in dummyFrame.data)) throw new Error("PRIV frame value should be an object with keys id and data");
+            return _genPrivateFrame(dummyFrame.data.id, dummyFrame.data.data);
+        case "IPLS": 
+            if (!Array.isArray(dummyFrame.data) || !Array.isArray(dummyFrame.data[0])) throw new Error("IPLS frame value should be an array of pairs");
+            return _genPairedTextFrame(dummyFrame.type, dummyFrame.data);
+        case "SYLT": 
+            if ("object" != typeof dummyFrame.data || !("type" in dummyFrame.data) || !("text" in dummyFrame.data) || !("timestampFormat" in dummyFrame.data)) throw new Error("SYLT frame value should be an object with keys type, text and timestampFormat");
+            if (!Array.isArray(dummyFrame.data.text) || !Array.isArray(dummyFrame.data.text[0])) throw new Error("SYLT frame text value should be an array of pairs");
+            if (dummyFrame.data.type < 0 || dummyFrame.data.type > 6) throw new Error("Incorrect SYLT frame content type");
+            if (dummyFrame.data.timestampFormat < 1 || dummyFrame.data.timestampFormat > 2) throw new Error("Incorrect SYLT frame time stamp format");
+            return _genSynchronisedLyricsFrame(dummyFrame.data.type, dummyFrame.data.text, dummyFrame.data.timestampFormat, dummyFrame.data.language || "eng", dummyFrame.data.description || "");
+        // @ts-ignore
+        default: throw new Error(`Unsupported frame ${dummyFrame.type}`)
+    }
+}
+/**
+ * @template {ID3FrameType} K
+ * @param {K} frameType
+ * @param {string | number} value
+ * @returns {{name:K}&integerFrame}
+ */
+function _genIntegerFrame(frameType, value) {
+    const a=parseInt(value + "",10);
+    return { name: frameType, value: a, size: plusTextHeader(a.toString().length) };
+}
+/**
+ * @template {ID3FrameType} T
+ * @param {T} frameType
+ * @param {string} value
+ * @returns {{name:T}&stringFrame}
+ */
+function _genStringFrame(frameType, value) {
+    const a = value.toString();
+    return { name: frameType, value: a, size: (frameType === "TDAT") ? 13+2*a.length : plusTextHeader(a.length)};
+}
+/**
+ * @param {number} e
+ * @param {string} a
+ * @param {ArrayBuffer | ArrayLike<number>} t
+ * @param {boolean} r
+ * @returns {ID3Frames["APIC"]}
+ */
+function _genPictureFrame(e, t, a, r) {
+    const n = function (e) {
+        if (!e || !e.length) return null;
+        if (255 === e[0] && 216 === e[1] && 255 === e[2]) return "image/jpeg";
+        if (137 === e[0] && 80 === e[1] && 78 === e[2] && 71 === e[3]) return "image/png";
+        if (71 === e[0] && 73 === e[1] && 70 === e[2]) return "image/gif";
+        if (87 === e[8] && 69 === e[9] && 66 === e[10] && 80 === e[11]) return "image/webp";
+        const t = 73 === e[0] && 73 === e[1] && 42 === e[2] && 0 === e[3], a = 77 === e[0] && 77 === e[1] && 0 === e[2] && 42 === e[3];
+        return t || a ? "image/tiff" : 66 === e[0] && 77 === e[1] ? "image/bmp" : 0 === e[0] && 0 === e[1] && 1 === e[2] && 0 === e[3] ? "image/x-icon" : null
+    }
+        (new Uint8Array(t)), i = a.toString();
+    if (!n) throw new Error("Unknown picture MIME type");
+    a || (r = !1);
+    if (!("byteLength" in t)) throw new Error("Picture frame data must be an ArrayBuffer or ArrayLike<number>");
+    return { name: "APIC", value: t, pictureType: e, mimeType: n, useUnicodeEncoding: r, description: i, size: pictureFrameSize(t.byteLength, n.length, i.length, r) };
+}
+/**
+ * @param {string} e
+ * @param {string} t
+ * @param {string} a
+ * @returns {ID3Frames["USLT"]}
+ */
+function _genLyricsFrame(e, t, a) {
+    const r = e.split("").map(e => e.charCodeAt(0)), n = t.toString(), s = a.toString();
+    var i, c;
+    return { name: "USLT", value: s, language: r, description: n, size: (i = n.length, c = s.length, 16 + 2 * i + 2 + 2 + 2 * c) };
+}
+/**
+ * @param {string} e
+ * @param {string} t
+ * @param {string} a
+ * @returns {ID3Frames["COMM"]}
+ */
+function _genCommentFrame(e, t, a) {
+    const r = e.split("").map(e => e.charCodeAt(0)), n = t.toString(), s = a.toString();
+    var i, c;
+    return { name: "COMM", value: s, language: r, description: n, size: (i = n.length, c = s.length, 16 + 2 * i + 2 + 2 + 2 * c) }
+}
+/**
+ * @param {string} e
+ * @param {ArrayBuffer | ArrayLike<number>} t
+ * @returns {ID3Frames["PRIV"]}
+ */
+function _genPrivateFrame(e, t) {
+    const a = e.toString();
+    if (!('byteLength' in t)) throw new Error("Private frame data must be an ArrayBuffer or ArrayLike<number>");
+    return { name: "PRIV", value: t, id: a, size: 10 + a.length + 1 + t.byteLength }
+}
+/**
+ * @param {string} e
+ * @param {string} t
+ * @returns {ID3Frames["TXXX"]}
+ */
+function _genUserStringFrame(e, t) {
+    const a = e.toString(), r = t.toString();
+    var n, s;
+    return { name: "TXXX", description: a, value: r, size: (n = a.length, s = r.length, 13 + 2 * n + 2 + 2 + 2 * s) }
+}
+/**
+ * @template {ID3FrameType} V
+ * @param {V} e
+ * @param {string} t
+ * @returns {{name:V}&stringFrame}
+ */
+function _genUrlLinkFrame(e, t) {
+    const a = t.toString();
+    return { name: e, value: a, size: 10 + a.length }
+}
+/**
+ * @param {"IPLS"} e
+ * @param {[string, number][]} t
+ */
+function _genPairedTextFrame(e, t) {
+    return { name: e, value: t, size: pairedTextFrameSize(t) }
+}
+/**
+ * @param {number} e
+ * @param {[string, number][]} t
+ * @param {number} a
+ * @param {string} r
+ * @param {string} n
+ * @returns {ID3Frames["SYLT"]}
+ */
+function _genSynchronisedLyricsFrame(e, t, a, r, n) {
+    const s = n.toString(), i = r.split("").map(e => e.charCodeAt(0));
+    return { name: "SYLT", value: t, language: i, description: s, type: e, timestampFormat: a, size: syncLyricsFrameSize(t, s.length) }
+}
 class Id3Editor {
     /** @type {ArrayBuffer} */
     arrayBuffer;
@@ -201,189 +812,8 @@ class Id3Editor {
     constructor(arrayBuffer) {
         if (!arrayBuffer || "object" != typeof arrayBuffer || !("byteLength" in arrayBuffer)) throw new Error("First argument should be an instance of ArrayBuffer or Buffer");
         this.arrayBuffer = arrayBuffer;
-        this.frames = this.readTag(arrayBuffer).frames;
+        this.frames = readTag(arrayBuffer).frames;
     }
-    /**
-     * @param {Uint8Array|ArrayBuffer} arrayBuffer
-     * @returns {Uint8ArrayScanner}
-     */
-    newScanner(arrayBuffer) {
-        /** @type {Uint8ArrayScanner} */
-        const scanner = {
-            Uint: new Uint8Array(arrayBuffer),
-            scanned: 0,
-            verify: (set, depth) => scanner.Uint.subarray(depth ?? scanner.scanned, (depth ?? scanner.scanned) + set.length).every((e, i) => e === set[i]),
-            extract: (length, depth) => scanner.Uint.subarray(depth ?? scanner.scanned, (depth ?? scanner.scanned) + length),
-            increment: (n) => { scanner.scanned += n; },
-            reset: () => { scanner.scanned = 0; },
-            backtrack: (n) => { scanner.scanned -= n; },
-            remaining: () => scanner.Uint.subarray(scanner.scanned)
-        };
-        return scanner;
-    }
-    /**
-     * @template {ID3FrameType} K
-     * @param {K} frameType
-     * @param {string | number} value
-     * @returns {{name:K}&integerFrame}
-     */
-    _genIntegerFrame(frameType, value) {
-        const a=parseInt(value + "",10);
-        return { name: frameType, value: a, size: plusTextHeader(a.toString().length) };
-    }
-    /**
-     * @template {ID3FrameType} T
-     * @param {T} frameType
-     * @param {string} value
-     * @returns {{name:T}&stringFrame}
-     */
-    _genStringFrame(frameType, value) {
-        const a = value.toString();
-        return { name: frameType, value: a, size: (frameType === "TDAT") ? 13+2*a.length : plusTextHeader(a.length)};
-    }
-    /**
-     * @param {number} e
-     * @param {string} a
-     * @param {ArrayBuffer | ArrayLike<number>} t
-     * @param {boolean} r
-     * @returns {ID3Frames["APIC"]}
-     */
-    _genPictureFrame(e, t, a, r) {
-        const n = function (e) {
-            if (!e || !e.length) return null;
-            if (255 === e[0] && 216 === e[1] && 255 === e[2]) return "image/jpeg";
-            if (137 === e[0] && 80 === e[1] && 78 === e[2] && 71 === e[3]) return "image/png";
-            if (71 === e[0] && 73 === e[1] && 70 === e[2]) return "image/gif";
-            if (87 === e[8] && 69 === e[9] && 66 === e[10] && 80 === e[11]) return "image/webp";
-            const t = 73 === e[0] && 73 === e[1] && 42 === e[2] && 0 === e[3], a = 77 === e[0] && 77 === e[1] && 0 === e[2] && 42 === e[3];
-            return t || a ? "image/tiff" : 66 === e[0] && 77 === e[1] ? "image/bmp" : 0 === e[0] && 0 === e[1] && 1 === e[2] && 0 === e[3] ? "image/x-icon" : null
-        }
-            (new Uint8Array(t)), i = a.toString();
-        if (!n) throw new Error("Unknown picture MIME type");
-        a || (r = !1);
-        if (!("byteLength" in t)) throw new Error("Picture frame data must be an ArrayBuffer or ArrayLike<number>");
-        return { name: "APIC", value: t, pictureType: e, mimeType: n, useUnicodeEncoding: r, description: i, size: pictureFrameSize(t.byteLength, n.length, i.length, r) };
-    }
-    /**
-     * @param {string} e
-     * @param {string} t
-     * @param {string} a
-     * @returns {ID3Frames["USLT"]}
-     */
-    _genLyricsFrame(e, t, a) {
-        const r = e.split("").map(e => e.charCodeAt(0)), n = t.toString(), s = a.toString();
-        var i, c;
-        return { name: "USLT", value: s, language: r, description: n, size: (i = n.length, c = s.length, 16 + 2 * i + 2 + 2 + 2 * c) };
-    }
-    /**
-     * @param {string} e
-     * @param {string} t
-     * @param {string} a
-     * @returns {ID3Frames["COMM"]}
-     */
-    _genCommentFrame(e, t, a) {
-        const r = e.split("").map(e => e.charCodeAt(0)), n = t.toString(), s = a.toString();
-        var i, c;
-        return { name: "COMM", value: s, language: r, description: n, size: (i = n.length, c = s.length, 16 + 2 * i + 2 + 2 + 2 * c) }
-    }
-    /**
-     * @param {string} e
-     * @param {ArrayBuffer | ArrayLike<number>} t
-     * @returns {ID3Frames["PRIV"]}
-     */
-    _genPrivateFrame(e, t) {
-        const a = e.toString();
-        if (!('byteLength' in t)) throw new Error("Private frame data must be an ArrayBuffer or ArrayLike<number>");
-        return { name: "PRIV", value: t, id: a, size: 10 + a.length + 1 + t.byteLength }
-    }
-    /**
-     * @param {string} e
-     * @param {string} t
-     * @returns {ID3Frames["TXXX"]}
-     */
-    _genUserStringFrame(e, t) {
-        const a = e.toString(), r = t.toString();
-        var n, s;
-        return { name: "TXXX", description: a, value: r, size: (n = a.length, s = r.length, 13 + 2 * n + 2 + 2 + 2 * s) }
-    }
-    /**
-     * @template {ID3FrameType} V
-     * @param {V} e
-     * @param {string} t
-     * @returns {{name:V}&stringFrame}
-     */
-    _genUrlLinkFrame(e, t) {
-        const a = t.toString();
-        return { name: e, value: a, size: 10 + a.length }
-    }
-    /**
-     * @param {"IPLS"} e
-     * @param {[string, number][]} t
-     */
-    _genPairedTextFrame(e, t) {
-        return { name: e, value: t, size: pairedTextFrameSize(t) }
-    }
-    /**
-     * @param {number} e
-     * @param {[string, number][]} t
-     * @param {number} a
-     * @param {string} r
-     * @param {string} n
-     * @returns {ID3Frames["SYLT"]}
-     */
-    _genSynchronisedLyricsFrame(e, t, a, r, n) {
-        const s = n.toString(), i = r.split("").map(e => e.charCodeAt(0));
-        return { name: "SYLT", value: t, language: i, description: s, type: e, timestampFormat: a, size: syncLyricsFrameSize(t, s.length) }
-    }
-    /**
-     * @template {ID3FrameType} K
-     * @param {ID3FrameArg} dummyFrame 
-     * @returns {ID3Frame}
-     */
-    genFrame(dummyFrame) {
-        switch (dummyFrame.type) {
-            case "TPE1": case "TCOM": case "TCON": {
-                if (!Array.isArray(dummyFrame.data)) throw new Error(`${dummyFrame.type} frame value should be an array of strings`);
-                return this._genStringFrame(dummyFrame.type, dummyFrame.data.join("TCON" === dummyFrame.type ? ";" : " / "));
-            }
-            case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TMED": case "TPUB": case "TCOP": case "TKEY": case "TEXT": case "TDAT": case "TCMP": case "TSSE": case "TSRC":
-                return this._genStringFrame(dummyFrame.type, dummyFrame.data);
-            case "TBPM": case "TLEN": case "TYER":
-                return this._genIntegerFrame(dummyFrame.type, dummyFrame.data);
-            case "USLT": 
-                if (dummyFrame.data.language = dummyFrame.data.language || "eng", "object" != typeof dummyFrame.data || !("description" in dummyFrame.data) || !("lyrics" in dummyFrame.data)) throw new Error("USLT frame value should be an object with keys description and lyrics");
-                if (dummyFrame.data.language && !dummyFrame.data.language.match(/[a-z]{3}/i)) throw new Error("Language must be coded following the ISO 639-2 standards");
-                return this._genLyricsFrame(dummyFrame.data.language, dummyFrame.data.description || "", dummyFrame.data.lyrics);
-            case "APIC":
-                if ("object" != typeof dummyFrame.data || !("type" in dummyFrame.data) || !("data" in dummyFrame.data) || !("description" in dummyFrame.data)) throw new Error("APIC frame value should be an object with keys type, data and description");
-                if (dummyFrame.data.type < 0 || dummyFrame.data.type > 20) throw new Error("Incorrect APIC frame picture type");
-                return this._genPictureFrame(dummyFrame.data.type, dummyFrame.data.data, dummyFrame.data.description || "", !!dummyFrame.data.useUnicodeEncoding);
-            case "TXXX": 
-                if ("object" != typeof dummyFrame.data || !("description" in dummyFrame.data) || !("value" in dummyFrame.data)) throw new Error("TXXX frame value should be an object with keys description and value");
-                return this._genUserStringFrame(dummyFrame.data.description || "", dummyFrame.data.value);
-            case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB": 
-                return this._genUrlLinkFrame(dummyFrame.type, dummyFrame.data);
-            case "COMM": 
-                if (dummyFrame.data.language = dummyFrame.data.language || "eng", "object" != typeof dummyFrame.data || !("description" in dummyFrame.data) || !("text" in dummyFrame.data)) throw new Error("COMM frame value should be an object with keys description and text");
-                if (dummyFrame.data.language && !dummyFrame.data.language.match(/[a-z]{3}/i)) throw new Error("Language must be coded following the ISO 639-2 standards");
-                return this._genCommentFrame(dummyFrame.data.language, dummyFrame.data.description || "", dummyFrame.data.text);
-            case "PRIV": 
-                if ("object" != typeof dummyFrame.data || !("id" in dummyFrame.data) || !("data" in dummyFrame.data)) throw new Error("PRIV frame value should be an object with keys id and data");
-                return this._genPrivateFrame(dummyFrame.data.id, dummyFrame.data.data);
-            case "IPLS": 
-                if (!Array.isArray(dummyFrame.data) || !Array.isArray(dummyFrame.data[0])) throw new Error("IPLS frame value should be an array of pairs");
-                return this._genPairedTextFrame(dummyFrame.type, dummyFrame.data);
-            case "SYLT": 
-                if ("object" != typeof dummyFrame.data || !("type" in dummyFrame.data) || !("text" in dummyFrame.data) || !("timestampFormat" in dummyFrame.data)) throw new Error("SYLT frame value should be an object with keys type, text and timestampFormat");
-                if (!Array.isArray(dummyFrame.data.text) || !Array.isArray(dummyFrame.data.text[0])) throw new Error("SYLT frame text value should be an array of pairs");
-                if (dummyFrame.data.type < 0 || dummyFrame.data.type > 6) throw new Error("Incorrect SYLT frame content type");
-                if (dummyFrame.data.timestampFormat < 1 || dummyFrame.data.timestampFormat > 2) throw new Error("Incorrect SYLT frame time stamp format");
-                return this._genSynchronisedLyricsFrame(dummyFrame.data.type, dummyFrame.data.text, dummyFrame.data.timestampFormat, dummyFrame.data.language || "eng", dummyFrame.data.description || "");
-            // @ts-ignore
-            default: throw new Error(`Unsupported frame ${dummyFrame.type}`)
-        }
-    }
-    
     clearFrames() {
         this.frames = [];
     }
@@ -400,83 +830,42 @@ class Id3Editor {
      * @returns {Id3Editor}
      */
     setFrame(dummyFrame) {
-        this.frames.push(this.genFrame(dummyFrame));
+        this.frames.push(genFrame(dummyFrame));
         return this
     }
-    /**
-     * @param {ArrayBuffer} arrayBuffer
-     */
-    removeTags(arrayBuffer) {
-        const scanner = this.newScanner(arrayBuffer);
-        const isStart = scanner.verify(charCodes("ID3"));
-        const isOldEnd = scanner.verify(charCodes("TAG"),scanner.Uint.length-128);
-        const isNewEnd = scanner.verify(charCodes("3DI"),scanner.Uint.length-(isOldEnd?138:10));
-        if ((isStart || isOldEnd || isNewEnd) && (arrayBuffer.byteLength < 10)) {
-            throw new Error("Corrupted ID3 tag, file too small.");
-        }
-        let [newStart, newEnd] = [0, arrayBuffer.byteLength];
-        if (isStart) {
-            if (arrayBuffer.byteLength < 10) throw new Error("Invalid ID3v2 tag");
-            const sizeBits = scanner.extract(4, 6),
-            size = (sizeBits[0] << 21) + (sizeBits[1] << 14) + (sizeBits[2] << 7) + sizeBits[3] + 10;
-            newStart = size;
-        }
-        if (isOldEnd) {
-            if (arrayBuffer.byteLength < 128) throw new Error("Invalid ID3v1 tag");
-            newEnd -= 128;
-        }
-        if (isNewEnd) {
-            if (arrayBuffer.byteLength < 10) throw new Error("Invalid ID3v2 tag");
-            const sizeBits = scanner.extract(4, newEnd - 6),
-            size = (sizeBits[0] << 21) + (sizeBits[1] << 14) + (sizeBits[2] << 7) + sizeBits[3] + 10;
-            newEnd -= size;
-        }
-        if (newStart >= newEnd) throw new Error("Corrupted ID3 tag, file too small for detected tags.");
-        return arrayBuffer.slice(newStart, newEnd);
-    }
     addTag() {
-        this.arrayBuffer = this.removeTags(this.arrayBuffer);
+        this.arrayBuffer = removeTags(this.arrayBuffer);
         const totalTagLength = 10 + this.frames.reduce((sum, frame) => sum + frame.size, 0) + this.padding;
         const newBuffer = new ArrayBuffer(this.arrayBuffer.byteLength + totalTagLength)
         const newUint = new Uint8Array(newBuffer);
         let c = 0; 
-        const ID33 = [73, 68, 51, 3];
-        newUint.set(ID33, c);
-        c += ID33.length;//Header
-        c += 2;//FrameFlags (0's)
-        const encodedLength = ((bodyLength) => {
+        function write (/** @type {ArrayLike<number>} */set) {
+            newUint.set(set, c);
+            c += set.length;
+        }
+        write([...charCodes("ID3"), 4]);//Header
+        write([0,0]);//FrameFlags (0's)
+        write(((bodyLength) => {
             const t = 127;return [bodyLength >>> 21 & t, bodyLength >>> 14 & t, bodyLength >>> 7 & t, bodyLength & t];
-        })(totalTagLength - 10);
-        newUint.set(encodedLength, c); 
-        c += encodedLength.length;
+        })(totalTagLength - 10));//length, encoded
         this.frames.forEach(frame => {
-            const encodedFName = strToBytes(frame.name);
-            newUint.set(encodedFName, c);
-            c += encodedFName.length;
-            const encodedFSize = intToBytes(frame.size - 10);
-            newUint.set(encodedFSize, c);
-            c += encodedFSize.length;
-            c += 2;//FrameFlags (0's)
-            function write (/** @type {ArrayLike<number>} */set) {
-                newUint.set(set, c);
-                c += set.length;
-            }
+            write(strToBytes(frame.name));//frame name, encoded
+            write(intToBytes(frame.size - 10));//frame size, encoded
+            write([0,0]);//FrameFlags (0's)
             switch (frame.name) {
                 case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
-                    write([1].concat(UTFBOM));
+                    write([1]);
+                    write(strToBytes(frame.value, 2));
                 case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
-                    const fVal = strToBytes(frame.value); 
-                    write(fVal);
+                    write(strToBytes(frame.value));
                     break;
                 case "TXXX": case "USLT": case "COMM":
                     write([1]);
                     if (frame.name != "TXXX") {
                         write(frame.language);
                     }
-                    write(UTFBOM);
-                    write(utf16String(frame.description));
-                    write([0, 0].concat(UTFBOM));
-                    write(utf16String(frame.value));
+                    write(strToBytes(frame.description,1));
+                    write(strToBytes(frame.value,1));
                     break;
                 case "TBPM": case "TLEN": case "TDAT": case "TYER":
                     c++;
@@ -492,34 +881,24 @@ class Id3Editor {
                     write(strToBytes(frame.mimeType));
                     write([0, frame.pictureType]);
                     if (frame.useUnicodeEncoding) {
-                        write(UTFBOM);
-                        write(utf16String(frame.description));
-                        c+=2; 
+                        write(strToBytes(frame.description,1));
                     } else {
-                        write(strToBytes(frame.description));
-                        c++;
+                        write(strToBytes(frame.description,0));
                     }
                     write(new Uint8Array(frame.value));
                     break;
                 case "IPLS":
                     write([1])
                     frame.value.forEach((t) => {
-                        write(UTFBOM);
-                        write(utf16String(t[0].toString()));
-                        write([0, 0].concat(UTFBOM));
-                        write(utf16String(t[1].toString()));
-                        write([0, 0]);
+                        write(strToBytes(t[0].toString(),1));
+                        write(strToBytes(t[1].toString(),1));
                     });
                     break;
                 case "SYLT": 
                     write([1].concat(frame.language).concat(frame.timestampFormat).concat(frame.type));
-                    write(UTFBOM);
-                    write(utf16String(frame.description));
-                    c+=2;
+                    write(strToBytes(frame.description,1));
                     frame.value.forEach((t) => {
-                        write(UTFBOM);
-                        write(utf16String(t[0].toString()));
-                        write([0, 0])
+                        write(strToBytes(t[0].toString(),1));
                         write(intToBytes(t[1]));
                     });
                     break;
@@ -530,520 +909,7 @@ class Id3Editor {
         }
         ), c += this.padding, newUint.set(new Uint8Array(this.arrayBuffer), c), this.arrayBuffer = newBuffer, newBuffer
     }
-    /**
-     * @param {Uint8ArrayScanner} scanner 
-     * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
-     */
-    _readID3v2(scanner) {
-        scanner.reset();
-        /** @type {ID3Frame[]} */
-        const frames = [];
-        const ID33 = [73, 68, 51, 3];
-        if (!scanner.verify(ID33)) throw new Error("Invalid Version Number " + scanner.extract(4).join(","));//ID3v2.3.0
-        scanner.increment(ID33.length + 2);//FrameFlags (ignored)
-        const encodedLength = scanner.extract(4);
-        const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
-        scanner.increment(4);
-        if (decodedLength > scanner.Uint.length - scanner.scanned) throw new Error("Invalid tag length " + decodedLength);
-        const headerend = scanner.scanned;
-        while (scanner.scanned < headerend + decodedLength) {
-            /** @type {any} */
-            const frame = {};
-            const encodedFName = scanner.extract(4);
-            frame.name = bytesToStr(encodedFName);
-            if (!frame.name || frame.name === "\0\0\0\0") break;
-            if (!frame.name.match(/^[A-Z0-9]{4}$/)) throw new Error("Invalid frame name " + frame.name);
-            scanner.increment(4);
-            const encodedFSize = scanner.extract(4);
-            frame.size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
-            let remainingFrame = frame.size;
-            if (frame.size > decodedLength + headerend - scanner.scanned) throw new Error("Invalid frame size " + frame.size);
-            scanner.increment(4);
-            scanner.increment(2);//FrameFlags (ignored)
-            switch (frame.name) {
-                case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
-                    if (!scanner.verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment([1].concat(UTFBOM).length);
-                case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
-                    frame.value = bytesToStr(scanner.extract(remainingFrame - 1));
-                    scanner.increment(remainingFrame - 1);
-                    break;
-                case "TXXX": case "USLT": case "COMM":
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (frame.name != "TXXX") {
-                        frame.language = Array.from(scanner.extract(3));
-                        scanner.increment(3);
-                        remainingFrame -= 3;
-                    }
-                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(UTFBOM.length);
-                    remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                    scanner.increment(frame.description.length + 2);
-                    remainingFrame -= frame.description.length + 2;
-                    if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment([0, 0].concat(UTFBOM).length);
-                    remainingFrame -= [0, 0].concat(UTFBOM).length;
-                    frame.value = bytesToStr(scanner.extract(remainingFrame));
-                    scanner.increment(remainingFrame);
-                    break;
-                case "TBPM": case "TLEN": case "TDAT": case "TYER":
-                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.value = parseInt(bytesToStr(scanner.extract(remainingFrame - 1)), 10);
-                    scanner.increment(remainingFrame);
-                    break;
-                case "PRIV":
-                    frame.id = bytesToStr(scanner.extract(remainingFrame - 1));
-                    scanner.increment(frame.id.length + 1);
-                    remainingFrame -= frame.id.length + 1;
-                    frame.value = scanner.extract(remainingFrame - 1 - frame.id.length);
-                    scanner.increment(frame.value.byteLength);
-                    break;
-                case "APIC":
-                    frame.useUnicodeEncoding = scanner.extract(1)[0]===1;
-                    frame.mimeType = bytesToStr(scanner.extract(remainingFrame - 1 - 1 - 1));
-                    scanner.increment(frame.mimeType.length + 1);
-                    remainingFrame -= frame.mimeType.length + 1;
-                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.pictureType = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (frame.useUnicodeEncoding) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length);
-                        remainingFrame -= UTFBOM.length;
-                        frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(frame.description.length + 2);
-                        remainingFrame -= frame.description.length + 2;
-                    } else {
-                        frame.description = bytesToStr(scanner.extract(remainingFrame - 1));
-                        scanner.increment(frame.description.length + 2);
-                        remainingFrame -= frame.description.length + 2;
-                    }
-                    frame.value = scanner.extract(remainingFrame);
-                    scanner.increment(frame.value.length);
-                    break;
-                case "IPLS":
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    /** @type {[string, number][]} */
-                    frame.value = [];
-                    while (remainingFrame > 0) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length);
-                        remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(str.length + 2);
-                        remainingFrame -= str.length + 2;
-                        if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment([0, 0].concat(UTFBOM).length);
-                        remainingFrame -= [0, 0].concat(UTFBOM).length;
-                        const num = parseInt(bytesToStr(scanner.extract(remainingFrame - 2)), 10);
-                        scanner.increment(num.toString().length + 2);
-                        remainingFrame -= num.toString().length + 2;
-                        frame.value.push([str, num]);
-                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(2);
-                        remainingFrame -= 2;
-                    }
-                    break;
-                case "SYLT": 
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    frame.language = Array.from(scanner.extract(3));
-                    scanner.increment(3);
-                    remainingFrame -= 3;
-                    frame.timestampFormat = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    frame.type = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(UTFBOM.length);console.log();
-                    remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                    scanner.increment(frame.description.length + 2);
-                    remainingFrame -= frame.description.length + 2;
-                    /** @type {[string, number][]} */
-                    frame.value = [];
-                    while (remainingFrame > 0) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length)
-                        remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(str.length + 2)
-                        remainingFrame -= str.length + 2;
-                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(2)
-                        remainingFrame -= 2;
-                        const num = (scanner.extract(4)[0] << 24) + (scanner.extract(4)[1] << 16) + (scanner.extract(4)[2] << 8) + scanner.extract(4)[3];
-                        scanner.increment(4)
-                        remainingFrame -= 4;
-                        frame.value.push([str, num]);
-                    }
-                    break;
-                default:
-                    throw new Error(`Unsupported frame ${frame.name}`)
-            }
-            scanner.increment(remainingFrame)
-            frames.push(frame);
-        }
-        const remaining = scanner.remaining();
-        return { frames: frames, remaining: remaining.buffer };
-    }
-    /**
-     * @param {Uint8ArrayScanner} scanner 
-     * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
-     */
-    _readID3v1(scanner) {
-        scanner.reset();
-        /** @type {ID3Frame[]} */
-        const frames = [];
-        const ID33 = [73, 68, 51, 3];
-        if (!scanner.verify(ID33)) throw new Error("Invalid Version Number " + scanner.extract(4).join(","));//ID3v2.3.0
-        scanner.increment(ID33.length + 2);//FrameFlags (ignored)
-        const encodedLength = scanner.extract(4);
-        const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
-        scanner.increment(4);
-        if (decodedLength > scanner.Uint.length - scanner.scanned) throw new Error("Invalid tag length " + decodedLength);
-        const headerend = scanner.scanned;
-        while (scanner.scanned < headerend + decodedLength) {
-            /** @type {any} */
-            const frame = {};
-            const encodedFName = scanner.extract(4);
-            frame.name = bytesToStr(encodedFName);
-            if (!frame.name || frame.name === "\0\0\0\0") break;
-            if (!frame.name.match(/^[A-Z0-9]{4}$/)) throw new Error("Invalid frame name " + frame.name);
-            scanner.increment(4);
-            const encodedFSize = scanner.extract(4);
-            frame.size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
-            let remainingFrame = frame.size;
-            if (frame.size > decodedLength + headerend - scanner.scanned) throw new Error("Invalid frame size " + frame.size);
-            scanner.increment(4);
-            scanner.increment(2);//FrameFlags (ignored)
-            switch (frame.name) {
-                case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
-                    if (!scanner.verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment([1].concat(UTFBOM).length);
-                case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
-                    frame.value = bytesToStr(scanner.extract(remainingFrame - 1));
-                    scanner.increment(remainingFrame - 1);
-                    break;
-                case "TXXX": case "USLT": case "COMM":
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (frame.name != "TXXX") {
-                        frame.language = Array.from(scanner.extract(3));
-                        scanner.increment(3);
-                        remainingFrame -= 3;
-                    }
-                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(UTFBOM.length);
-                    remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                    scanner.increment(frame.description.length + 2);
-                    remainingFrame -= frame.description.length + 2;
-                    if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment([0, 0].concat(UTFBOM).length);
-                    remainingFrame -= [0, 0].concat(UTFBOM).length;
-                    frame.value = bytesToStr(scanner.extract(remainingFrame));
-                    scanner.increment(remainingFrame);
-                    break;
-                case "TBPM": case "TLEN": case "TDAT": case "TYER":
-                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.value = parseInt(bytesToStr(scanner.extract(remainingFrame - 1)), 10);
-                    scanner.increment(remainingFrame);
-                    break;
-                case "PRIV":
-                    frame.id = bytesToStr(scanner.extract(remainingFrame - 1));
-                    scanner.increment(frame.id.length + 1);
-                    remainingFrame -= frame.id.length + 1;
-                    frame.value = scanner.extract(remainingFrame - 1 - frame.id.length);
-                    scanner.increment(frame.value.byteLength);
-                    break;
-                case "APIC":
-                    frame.useUnicodeEncoding = scanner.extract(1)[0]===1;
-                    frame.mimeType = bytesToStr(scanner.extract(remainingFrame - 1 - 1 - 1));
-                    scanner.increment(frame.mimeType.length + 1);
-                    remainingFrame -= frame.mimeType.length + 1;
-                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.pictureType = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (frame.useUnicodeEncoding) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length);
-                        remainingFrame -= UTFBOM.length;
-                        frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(frame.description.length + 2);
-                        remainingFrame -= frame.description.length + 2;
-                    } else {
-                        frame.description = bytesToStr(scanner.extract(remainingFrame - 1));
-                        scanner.increment(frame.description.length + 2);
-                        remainingFrame -= frame.description.length + 2;
-                    }
-                    frame.value = scanner.extract(remainingFrame);
-                    scanner.increment(frame.value.length);
-                    break;
-                case "IPLS":
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    /** @type {[string, number][]} */
-                    frame.value = [];
-                    while (remainingFrame > 0) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length);
-                        remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(str.length + 2);
-                        remainingFrame -= str.length + 2;
-                        if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment([0, 0].concat(UTFBOM).length);
-                        remainingFrame -= [0, 0].concat(UTFBOM).length;
-                        const num = parseInt(bytesToStr(scanner.extract(remainingFrame - 2)), 10);
-                        scanner.increment(num.toString().length + 2);
-                        remainingFrame -= num.toString().length + 2;
-                        frame.value.push([str, num]);
-                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(2);
-                        remainingFrame -= 2;
-                    }
-                    break;
-                case "SYLT": 
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    frame.language = Array.from(scanner.extract(3));
-                    scanner.increment(3);
-                    remainingFrame -= 3;
-                    frame.timestampFormat = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    frame.type = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(UTFBOM.length);console.log();
-                    remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                    scanner.increment(frame.description.length + 2);
-                    remainingFrame -= frame.description.length + 2;
-                    /** @type {[string, number][]} */
-                    frame.value = [];
-                    while (remainingFrame > 0) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length)
-                        remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(str.length + 2)
-                        remainingFrame -= str.length + 2;
-                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(2)
-                        remainingFrame -= 2;
-                        const num = (scanner.extract(4)[0] << 24) + (scanner.extract(4)[1] << 16) + (scanner.extract(4)[2] << 8) + scanner.extract(4)[3];
-                        scanner.increment(4)
-                        remainingFrame -= 4;
-                        frame.value.push([str, num]);
-                    }
-                    break;
-                default:
-                    throw new Error(`Unsupported frame ${frame.name}`)
-            }
-            scanner.increment(remainingFrame)
-            frames.push(frame);
-        }
-        const remaining = scanner.remaining();
-        return { frames: frames, remaining: remaining.buffer };
-    }
-    /**
-     * @param {Uint8ArrayScanner} scanner 
-     * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
-     */
-    _readID3v2point4(scanner) {
-        scanner.reset();
-        /** @type {ID3Frame[]} */
-        const frames = [];
-        const ID33 = [73, 68, 51, 3];
-        if (!scanner.verify(ID33)) throw new Error("Invalid Version Number " + scanner.extract(4).join(","));//ID3v2.3.0
-        scanner.increment(ID33.length + 2);//FrameFlags (ignored)
-        const encodedLength = scanner.extract(4);
-        const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
-        scanner.increment(4);
-        if (decodedLength > scanner.Uint.length - scanner.scanned) throw new Error("Invalid tag length " + decodedLength);
-        const headerend = scanner.scanned;
-        while (scanner.scanned < headerend + decodedLength) {
-            /** @type {any} */
-            const frame = {};
-            const encodedFName = scanner.extract(4);
-            frame.name = bytesToStr(encodedFName);
-            if (!frame.name || frame.name === "\0\0\0\0") break;
-            if (!frame.name.match(/^[A-Z0-9]{4}$/)) throw new Error("Invalid frame name " + frame.name);
-            scanner.increment(4);
-            const encodedFSize = scanner.extract(4);
-            frame.size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
-            let remainingFrame = frame.size;
-            if (frame.size > decodedLength + headerend - scanner.scanned) throw new Error("Invalid frame size " + frame.size);
-            scanner.increment(4);
-            scanner.increment(2);//FrameFlags (ignored)
-            switch (frame.name) {
-                case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
-                    if (!scanner.verify([1].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment([1].concat(UTFBOM).length);
-                case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
-                    frame.value = bytesToStr(scanner.extract(remainingFrame - 1));
-                    scanner.increment(remainingFrame - 1);
-                    break;
-                case "TXXX": case "USLT": case "COMM":
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (frame.name != "TXXX") {
-                        frame.language = Array.from(scanner.extract(3));
-                        scanner.increment(3);
-                        remainingFrame -= 3;
-                    }
-                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(UTFBOM.length);
-                    remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                    scanner.increment(frame.description.length + 2);
-                    remainingFrame -= frame.description.length + 2;
-                    if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment([0, 0].concat(UTFBOM).length);
-                    remainingFrame -= [0, 0].concat(UTFBOM).length;
-                    frame.value = bytesToStr(scanner.extract(remainingFrame));
-                    scanner.increment(remainingFrame);
-                    break;
-                case "TBPM": case "TLEN": case "TDAT": case "TYER":
-                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.value = parseInt(bytesToStr(scanner.extract(remainingFrame - 1)), 10);
-                    scanner.increment(remainingFrame);
-                    break;
-                case "PRIV":
-                    frame.id = bytesToStr(scanner.extract(remainingFrame - 1));
-                    scanner.increment(frame.id.length + 1);
-                    remainingFrame -= frame.id.length + 1;
-                    frame.value = scanner.extract(remainingFrame - 1 - frame.id.length);
-                    scanner.increment(frame.value.byteLength);
-                    break;
-                case "APIC":
-                    frame.useUnicodeEncoding = scanner.extract(1)[0]===1;
-                    frame.mimeType = bytesToStr(scanner.extract(remainingFrame - 1 - 1 - 1));
-                    scanner.increment(frame.mimeType.length + 1);
-                    remainingFrame -= frame.mimeType.length + 1;
-                    if (!scanner.verify([0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    frame.pictureType = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (frame.useUnicodeEncoding) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length);
-                        remainingFrame -= UTFBOM.length;
-                        frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(frame.description.length + 2);
-                        remainingFrame -= frame.description.length + 2;
-                    } else {
-                        frame.description = bytesToStr(scanner.extract(remainingFrame - 1));
-                        scanner.increment(frame.description.length + 2);
-                        remainingFrame -= frame.description.length + 2;
-                    }
-                    frame.value = scanner.extract(remainingFrame);
-                    scanner.increment(frame.value.length);
-                    break;
-                case "IPLS":
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    /** @type {[string, number][]} */
-                    frame.value = [];
-                    while (remainingFrame > 0) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length);
-                        remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(str.length + 2);
-                        remainingFrame -= str.length + 2;
-                        if (!scanner.verify([0, 0].concat(UTFBOM))) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment([0, 0].concat(UTFBOM).length);
-                        remainingFrame -= [0, 0].concat(UTFBOM).length;
-                        const num = parseInt(bytesToStr(scanner.extract(remainingFrame - 2)), 10);
-                        scanner.increment(num.toString().length + 2);
-                        remainingFrame -= num.toString().length + 2;
-                        frame.value.push([str, num]);
-                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(2);
-                        remainingFrame -= 2;
-                    }
-                    break;
-                case "SYLT": 
-                    if (!scanner.verify([1])) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    frame.language = Array.from(scanner.extract(3));
-                    scanner.increment(3);
-                    remainingFrame -= 3;
-                    frame.timestampFormat = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    frame.type = scanner.extract(1)[0];
-                    scanner.increment(1);
-                    remainingFrame -= 1;
-                    if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                    scanner.increment(UTFBOM.length);console.log();
-                    remainingFrame -= UTFBOM.length;
-                    frame.description = bytesToStr(scanner.extract(remainingFrame - 2));
-                    scanner.increment(frame.description.length + 2);
-                    remainingFrame -= frame.description.length + 2;
-                    /** @type {[string, number][]} */
-                    frame.value = [];
-                    while (remainingFrame > 0) {
-                        if (!scanner.verify(UTFBOM)) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(UTFBOM.length)
-                        remainingFrame -= UTFBOM.length;
-                        const str = bytesToStr(scanner.extract(remainingFrame - 2));
-                        scanner.increment(str.length + 2)
-                        remainingFrame -= str.length + 2;
-                        if (!scanner.verify([0, 0])) throw new Error("Unsupported encoding for frame " + frame.name);
-                        scanner.increment(2)
-                        remainingFrame -= 2;
-                        const num = (scanner.extract(4)[0] << 24) + (scanner.extract(4)[1] << 16) + (scanner.extract(4)[2] << 8) + scanner.extract(4)[3];
-                        scanner.increment(4)
-                        remainingFrame -= 4;
-                        frame.value.push([str, num]);
-                    }
-                    break;
-                default:
-                    throw new Error(`Unsupported frame ${frame.name}`)
-            }
-            scanner.increment(remainingFrame)
-            frames.push(frame);
-        }
-        const remaining = scanner.remaining();
-        return { frames: frames, remaining: remaining.buffer };
-    }
-    /**
-     * 
-     * @param {ArrayBuffer} arrayBuffer
-     * @returns {{ frames:ID3Frame[], remaining:ArrayBuffer }}
-     */
-    readTag(arrayBuffer) {
-        const scanner = this.newScanner(arrayBuffer);
-        const start = this._readID3v2(scanner);
-        const oldEnd = this._readID3v1(scanner);
-        const newEnd = this._readID3v2point4(scanner);
-        const allFrames = start.frames.concat(oldEnd.frames).concat(newEnd.frames);
-        //dedupe, prioritizing the first occurrence of each frame name
-        const deDupedFrames = allFrames.filter((frame, index, self) => index === self.findIndex((f) => f.name === frame.name));
-        const remaining = this.removeTags(arrayBuffer); 
-        return { frames: deDupedFrames, remaining: remaining};
-    }
+    
     getBlob() {
         return new Blob([this.arrayBuffer], {
             type: "audio/mpeg"
@@ -1059,6 +925,33 @@ class Id3Editor {
 
 }
 export {
-    Id3Editor as Id3Editor
-}
-    ;
+    Id3Editor as Id3Editor,
+    charCodes,
+    strToBytes,
+    extractStr,
+    bytesToStr,
+    intToBytes,
+    plusTextHeader,
+    pictureFrameSize,
+    pairedTextFrameSize,
+    syncLyricsFrameSize,
+    newScanner,
+    readTag,
+    _readID3v2,
+    _readID3v1,
+    _readID3v2point4,
+    _parseID3v2Frames,
+    parseFrame,
+    removeTags,
+    genFrame,
+    _genIntegerFrame,
+    _genStringFrame,
+    _genPictureFrame,
+    _genLyricsFrame,
+    _genCommentFrame,
+    _genPrivateFrame,
+    _genUserStringFrame,
+    _genUrlLinkFrame,
+    _genPairedTextFrame,
+    _genSynchronisedLyricsFrame
+};
