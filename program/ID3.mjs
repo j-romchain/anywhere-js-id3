@@ -856,6 +856,7 @@ class Id3Editor {
                 case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
                     write([1]);
                     write(strToBytes(frame.value, 2));
+                    break;
                 case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
                     write(strToBytes(frame.value));
                     break;
