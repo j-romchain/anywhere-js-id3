@@ -157,12 +157,13 @@ function strToBytes(t,e=0) {
 /**
  * @param {Uint8Array} t
  * @param {number} [e] encoding
+ * @param {boolean} [noNull] indicate if there is no null terminator
  * @returns {[number,string]}
  */
-function extractStr(t,e=3) {
+function extractStr(t,e=3,noNull) {
     const is16Bit = e>0 && e<3;
-    const len = t.findIndex((v,i,r)=>is16Bit?(v===0 && r[i+1]===0 && i%2===0):v===0);
-    if (len<0) console.warn("Missing Null Terminator, interpreting all as string.");
+    let len = noNull?t.byteLength:t.findIndex((v,i,r)=>is16Bit?(v===0 && r[i+1]===0 && i%2===0):v===0);
+    if (len<0) { console.warn("Missing Null Terminator, interpreting all as string."); len = t.byteLength; debugger;}
     return [len, bytesToStr(t.slice(0,len),e)];
 }
 /**
@@ -364,26 +365,29 @@ function _parseID3v2Frames(arrayBuffer, version = 3) {
     /** @type {RawFrame[]} */
     const rawFrames = [];
     while (allframesScanner.scanned < allframesScanner.Uint.length) {
-        let name = bytesToStr(allframesScanner.extract(pre3 ? 3:4));
-        if (!name || name === "\0\0\0\0" || name === "\0\0\0") break;
-        if (!name.match(new RegExp("^[A-Z0-9]{"+(pre3?3:4)+"}$"))) throw new Error("Invalid frame name " + name);
+        let nm = bytesToStr(allframesScanner.extract(pre3 ? 3:4));
+        if (!nm || nm === "\0\0\0\0" || nm === "\0\0\0") break;
+        if (!nm.match(new RegExp("^[A-Z0-9]{"+(pre3?3:4)+"}$"))) throw new Error("Invalid frame name " + nm);
         if (pre3) {
             /** @type {Record<String,ID3Frame["name"]>} */
             const pre3Frames = { /* TEXT FRAMES */ /* Title */ "TT2": "TIT2", /* Artist */ "TP1": "TPE1", /* Album */ "TAL": "TALB", /* Track number */ "TRK": "TRCK", /* Year */ "TYE": "TYER", /* Genre */ "TCO": "TCON", /* Album Artist / Band */ "TP2": "TPE2", /* Composer */ "TCM": "TCOM", /* Lyricist */ "TXT": "TEXT", /* Initial key */ "TKE": "TKEY", /* Language */ "TLA": "TLAN", /* Length */ "TLE": "TLEN", /* Publisher */ "TPB": "TPUB", /* ISRC */ "TRC": "TSRC", /* Part of set */ "TPA": "TPOS", /* Content group */ "TT1": "TIT1", /* Subtitle */ "TT3": "TIT3", /* Media type */ "TMT": "TMED", /* Encoded by */ "TEN": "TENC", /* COMMENTS & LYRICS */ /* Comments */ "COM": "COMM", /* Synchronized lyrics */ "SLT": "SYLT", /* URL FRAMES */ "WCM": "WCOM", "WCP": "WCOP", "WAF": "WOAF", "WAR": "WOAR", "WAS": "WOAS", "WPB": "WPUB", /* SPECIAL / COMPLEX FRAMES */ /* Involved people list */ "IPL": "IPLS", /* Attached picture */ "PIC": "APIC", /* Buffer size*/ "BUF": "RBUF", /* Play counter*/ "CNT": "PCNT", /* Equalization */ "EQU": "EQUA", /* Event Timing */ "ETC": "ETCO", /* File In Tag */ "GEO": "GEOB", /* CD ID*/ "MCI": "MCDI", /* MPEG Lookup Table */ "MLL": "MLLT", /* Relative Volume */ "RVA": "RVAD", /* TempoSync */ "STC": "STCO", /* Unsynced lyrics */ "ULT": "USLT", /* File UID */ "UFI": "UFID", /* Custom URL */ "WXX": "WXXX" };
-            name = pre3Frames[name] ?? (name + " ");
+            nm = pre3Frames[nm] ?? (nm + " ");
         }
+        /** @type {ID3Frame["name"]} */
+        // @ts-ignore
+        const name = nm;
         allframesScanner.increment(pre3?3:4);
         const encodedFSize = [...(pre3?[0]:[]),...allframesScanner.extract(pre3?3:4)];
         const size = (encodedFSize[0] << 24) + (encodedFSize[1] << 16) + (encodedFSize[2] << 8) + encodedFSize[3];
         if (size > allframesScanner.Uint.length - allframesScanner.scanned) throw new Error("Invalid frame size " + size);
         allframesScanner.increment(pre3?3:4);
-        const arrayBuffer = allframesScanner.extract(size + (pre3?0:2));
+        const arrayBuffer = allframesScanner.extract(size + (pre3?0:2)).slice().buffer;
+        allframesScanner.increment(size + (pre3?0:2));
         /** @type {RawFrame} */
         let f = {
-            // @ts-ignore
             name,
             size,
-            arrayBuffer
+            ab: arrayBuffer
         };
         rawFrames.push(f);
     }
@@ -403,12 +407,12 @@ function parseFrame(rawFrame, pre3) {
         case "TPE1": case "TDAT": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC": case "TDRC": case "TENC": case "TCMP":{
                 const e = fscn.extract(1)[0];
                 fscn.increment(1);
-                const [l, value] = extractStr(fscn.remaining(), e);
+                const [l, value] = extractStr(fscn.remaining(), e, true);
                 fscn.increment(l);
                 return { name:rawFrame.name, size:rawFrame.size, value };
             }
         case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB": {
-                const [l, value] = extractStr(fscn.remaining(),0);
+                const [l, value] = extractStr(fscn.remaining(),0,true);
                 fscn.increment(l);
                 return { name:rawFrame.name, size:rawFrame.size, value };
             }
@@ -429,7 +433,7 @@ function parseFrame(rawFrame, pre3) {
         case "TBPM": case "TLEN": case "TYER": case "PCNT": {
                 const e = fscn.extract(1)[0];
                 fscn.increment(1);
-                const [vl, valueStr] = extractStr(fscn.remaining(),e);
+                const [vl, valueStr] = extractStr(fscn.remaining(),e,true);
                 const value = parseInt(valueStr, 10);
                 fscn.increment(vl);
                 return { name:rawFrame.name, size:rawFrame.size, value };
@@ -843,7 +847,7 @@ class Id3Editor {
             newUint.set(set, c);
             c += set.length;
         }
-        write([...charCodes("ID3"), 4]);//Header
+        write([...charCodes("ID3\x04")]);//Header
         write([0,0]);//FrameFlags (0's)
         write(((bodyLength) => {
             const t = 127;return [bodyLength >>> 21 & t, bodyLength >>> 14 & t, bodyLength >>> 7 & t, bodyLength & t];
@@ -853,26 +857,26 @@ class Id3Editor {
             write(intToBytes(frame.size - 10));//frame size, encoded
             write([0,0]);//FrameFlags (0's)
             switch (frame.name) {
-                case "TPE1": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC":
+                case "TPE1": case "TDAT": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC": case "TDRC": case "TENC": case "TCMP":
                     write([1]);
                     write(strToBytes(frame.value, 2));
                     break;
                 case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
                     write(strToBytes(frame.value));
                     break;
-                case "TXXX": case "USLT": case "COMM":
+                case "TXXX":  case "WXXX": case "USLT": case "COMM":
                     write([1]);
-                    if (frame.name != "TXXX") {
+                    if (frame.name === "USLT" || frame.name === "COMM") {
                         write(frame.language);
                     }
                     write(strToBytes(frame.description,1));
-                    write(strToBytes(frame.value,1));
+                    write(strToBytes(frame.value,(frame.name === "WXXX") ? 3:1));
                     break;
-                case "TBPM": case "TLEN": case "TDAT": case "TYER":
+                case "TBPM": case "TLEN": case "TYER": case "PCNT":
                     c++;
                     write(strToBytes(frame.value+""));
                     break;
-                case "PRIV":
+                case "PRIV": case "UFID":
                     write(strToBytes(frame.id));
                     c++;
                     write(new Uint8Array(frame.value));
@@ -903,10 +907,107 @@ class Id3Editor {
                         write(intToBytes(t[1]));
                     });
                     break;
+                case "RBUF":
+                    // bufferSize is 3 bytes, offsetToNextTag is 4 bytes, embeddedInfoFlag is 1 byte (bit 1)
+                    write([
+                        (frame.bufferSize >>> 16) & 255,
+                        (frame.bufferSize >>> 8) & 255,
+                        frame.bufferSize & 255
+                    ]);
+                    write([frame.embeddedInfoFlag ? 0x02 : 0]);
+                    write([
+                        (frame.offsetToNextTag >>> 24) & 255,
+                        (frame.offsetToNextTag >>> 16) & 255,
+                        (frame.offsetToNextTag >>> 8) & 255,
+                        frame.offsetToNextTag & 255
+                    ]);
+                    break;
+                case "EQUA": {
+                    write([16]); // Defaulting to 16-bit adjustment resolution
+                    frame.value.forEach(eq => {
+                        const inc = eq.adjustment >= 0;
+                        const adj = Math.abs(eq.adjustment);
+                        // Frequency is 15 bits, high bit indicates increment/decrement flag
+                        const freqHigh = ((eq.frequency >> 8) & 0x7F) | (inc ? 0x80 : 0x00);
+                        const freqLow = eq.frequency & 0xFF;
+                        write([freqHigh, freqLow]);
+                        // Writing 16-bit (2 bytes) adjustment
+                        write([(adj >> 8) & 0xFF, adj & 0xFF]);
+                    });
+                    break;
+                }
+                case "ETCO": {
+                    write([1]); // Time stamp format (1 = absolute time using milliseconds)
+                    frame.value.forEach(item => {
+                        write([item.type]);
+                        write(intToBytes(item.timestamp));
+                    });
+                    break;
+                }
+                case "GEOB": {
+                    write([1]); // Text encoding (Unicode/UTF-8)
+                    write(strToBytes(frame.mimeType, 0)); // MIME type is Latin-1 encoded
+                    write(strToBytes(frame.filename, 1));
+                    write(strToBytes(frame.description, 1));
+                    write(new Uint8Array(frame.value));
+                    break;
+                }
+                case "MCDI": {
+                    write(new Uint8Array(frame.value));
+                    break;
+                }
+                case "STCO": {
+                    write([1]); // Time stamp format
+                    frame.value.forEach(item => {
+                        write([item.tempo]);
+                        write(intToBytes(item.timestamp));
+                    });
+                    break;
+                }
+                case "MLLT": {
+                    write([
+                        (frame.framesBetweenReference >> 8) & 0xFF,
+                        frame.framesBetweenReference & 0xFF
+                    ]);
+                    write([
+                        (frame.bytesBetweenReference >> 16) & 0xFF,
+                        (frame.bytesBetweenReference >> 8) & 0xFF,
+                        frame.bytesBetweenReference & 0xFF
+                    ]);
+                    write([
+                        (frame.millisecondsBetweenReference >> 16) & 0xFF,
+                        (frame.millisecondsBetweenReference >> 8) & 0xFF,
+                        frame.millisecondsBetweenReference & 0xFF
+                    ]);
+                    write([frame.devianceBits]);
+                    write([0, 0]); // placeholder skip for bitsForBytes & bitsForMillis
+                    frame.deviations.forEach(dev => {
+                        // Packing deviations based on devianceBits logic if needed, or writing raw
+                        write(intToBytes(dev));
+                    });
+                    break;
+                }
+                case "RVAD": {
+                    const flags = (frame.value.increment ? 0x01 : 0) | ((frame.value.bitsUsed & 0x07) << 1);
+                    write([flags]);
+                    // If channels are populated, serialize them out per spec requirements
+                    frame.value.channels.forEach(ch => {
+                        write([ch.channel]);
+                        write([
+                            (ch.volumeChange >> 8) & 0xFF,
+                            ch.volumeChange & 0xFF
+                        ]);
+                        if (ch.peakVolume) {
+                            write(new Uint8Array(ch.peakVolume));
+                        }
+                    });
+                    break;
+                }
                 default:
-                    throw new Error(`Unsupported frame ${frame.name}`)
+                    /** @type {undefined} */
+                    const u = frame.name;
+                    throw new Error(`Unsupported frame ${u}`)
             }
-
         }
         ), c += this.padding, newUint.set(new Uint8Array(this.arrayBuffer), c), this.arrayBuffer = newBuffer, newBuffer
     }
