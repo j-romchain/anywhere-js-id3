@@ -129,6 +129,21 @@
  * @property {() => Uint8Array<ArrayBuffer>} remaining
  */
 /**
+ * @typedef {Object} ArrayBufferBuilder
+ * @property {number[]} building
+ * @property {number} cursorPos
+ * @property {()=>number} built
+ * @property {(set: number[]) => void} write
+ * @property {(set: number[]) => void} overWrite
+ * @property {(n: number) => void} write0s
+ * @property {(n: number) => void} setWritePos
+ * @property {() => number} toStart
+ * @property {() => number} toEnd
+ * @property {(n: any) => number} jumpAhead
+ * @property {(n: any) => number} jumpBack
+ * @property {() => ArrayBuffer} result
+ */
+/**
  * @param {string} e
  */
 function charCodes(e) {
@@ -138,18 +153,18 @@ function charCodes(e) {
 /**
  * @param {string} t
  * @param {number} [e]
- * @returns {Uint8Array}
+ * @returns {number[]}
  */
 function strToBytes(t,e=0) {
     switch (e) {
         case 0:
-            return new Uint8Array([...t.split("").map(c=>c.charCodeAt(0) & 0xFF),0]);
+            return [...t.split("").map(c=>c.charCodeAt(0) & 0xFF),0];
         case 1:
-            return new Uint8Array([0xFF, 0xFE, ...t.split("").flatMap(c=>[c.charCodeAt(0) & 0xFF,(c.charCodeAt(0) >> 8) & 0xFF]),0,0]);
+            return [0xFF, 0xFE, ...t.split("").flatMap(c=>[c.charCodeAt(0) & 0xFF,(c.charCodeAt(0) >> 8) & 0xFF]),0,0];
         case 2:
-            return new Uint8Array([0xFE, 0xFF, ...t.split("").flatMap(c=>[(c.charCodeAt(0) >> 8) & 0xFF,c.charCodeAt(0) & 0xFF]),0,0]);
+            return [0xFE, 0xFF, ...t.split("").flatMap(c=>[(c.charCodeAt(0) >> 8) & 0xFF,c.charCodeAt(0) & 0xFF]),0,0];
         case 3:
-            return new TextEncoder().encode(t+"\0");
+            return [...new TextEncoder().encode(t+"\0")];
         default:
             throw Error("Encoding Bit Not Valid:'" + e + "'");
     }
@@ -256,6 +271,40 @@ function newScanner(arrayBuffer) {
     return scanner;
 }
 /**
+ * @returns {ArrayBufferBuilder}
+ */
+function newBuilder() {
+    /** @type {ArrayBufferBuilder} */
+    const builder = {
+        building: [],
+        cursorPos: 0,
+        built: ()=>builder.building.length,
+        write: (set) => {
+            if (builder.cursorPos===builder.building.length){
+                builder.building.push(...set);
+                builder.cursorPos+=set.length;
+                return true;
+            }
+            builder.building=builder.building.slice(0,builder.cursorPos).concat(set).concat(builder.building.slice(builder.cursorPos));
+            builder.cursorPos+=set.length;
+            return true;
+        },
+        overWrite: (set) => {
+                builder.building=builder.building.slice(0,builder.cursorPos).concat(set).concat(builder.building.slice(builder.cursorPos+set.length));
+                builder.cursorPos+=set.length;
+                return true;
+            },
+        write0s: (n) => builder.overWrite(new Array(n).fill(0)),
+        setWritePos: (n) => builder.cursorPos = n,
+        toStart: () => builder.cursorPos = 0,
+        toEnd: () => builder.cursorPos = builder.built.length,
+        jumpAhead: (n) => builder.cursorPos = Math.min(builder.cursorPos+n,builder.built.length),
+        jumpBack: (n) => builder.cursorPos = Math.max(builder.cursorPos-n,0),
+        result: () => new Uint8Array(builder.building).buffer.slice()
+    };
+    return builder;
+}
+/**
  * 
  * @param {ArrayBuffer} arrayBuffer
  * @returns {{ frames:ID3Frame[], remaining:ArrayBuffer }}
@@ -264,7 +313,7 @@ function readTag(arrayBuffer) {
     const start = _readID3v2(arrayBuffer);
     const oldEnd = _readID3v1(arrayBuffer);
     const newEnd = _readID3v2point4(arrayBuffer);
-    const allFrames = start.frames.concat(oldEnd.frames).concat(newEnd.frames);
+    const allFrames = (start?.frames ?? []).concat(oldEnd.frames).concat(newEnd.frames);
     //dedupe, prioritizing the first occurrence of each frame name
     const deDupedFrames = allFrames.filter((frame, index, self) => index === self.findIndex((f) => f.name === frame.name));
     const remaining = removeTags(arrayBuffer); 
@@ -273,23 +322,188 @@ function readTag(arrayBuffer) {
 /** @typedef {{name:ID3Frame["name"], size:number, ab:ArrayBuffer}} RawFrame */
 /**
  * @param {ArrayBuffer} arrayBuffer 
- * @returns {{frames:ID3Frame[], remaining:ArrayBuffer}}
+ * @returns {{header:ID3EndPart, extHeader:ID3ExtHeader | null, frames:ID3Frame[], padding:number, footer:ID3EndPart | null, remaining:ArrayBuffer} | null};
  */
 function _readID3v2(arrayBuffer) {
-    const scanner = newScanner(arrayBuffer);
-    if (!scanner.verify(charCodes("ID3"))) {
-        // No ID3v2 tag found, don't error, just return no frames.
-        return { frames: [], remaining: arrayBuffer };
+    let c = 0;
+    function ext(/** @type {number} */ln) {
+        c+=ln;
+        return arrayBuffer.slice(c-ln,c);
     }
-    scanner.increment(3);//"ID3"
-    const [version,subversion,flags] = scanner.extract(3);
-    scanner.increment(3);//Version,subversion,flags
-    const encodedLength = scanner.extract(4);
-    const decodedLength = (encodedLength[0] << 21) + (encodedLength[1] << 14) + (encodedLength[2] << 7) + encodedLength[3];
+    if (arrayBuffer.byteLength<10) return null;
+    const header = _parseID3v2Header(ext(10));
+    if (!header) return null;
+    const extSize = header.flags.isExtended?((rs)=>(rs[0] << 21) + (rs[1] << 14) + (rs[2] << 7) + rs[3])(new Uint8Array(arrayBuffer.slice(c,c+4))):0;
+    const extHeader = (!header.flags.isExtended)?null:_parseID3v2ExtHeader(ext(extSize));
+    const framesNPadding = arrayBuffer.slice(c,c+header.size-extSize);
+    const framesSize = new Uint8Array(framesNPadding).findLastIndex(v=>v!==0);
+    const frames = _parseID3v2Frames(ext(framesSize));
+    if (!frames) return null;
+    const padding = framesNPadding.byteLength-framesSize;
+    const footer = header.flags.hasFooter ? _parseID3v2Footer(ext(10)):null;
+    const remaining = arrayBuffer.slice(c);
+    return { header, extHeader, frames, padding, footer, remaining };
+}
+/**
+ * @typedef {{
+ *     magic: string;
+ *     version: number;
+ *     revision: number;
+ *     flags: {
+ *         rawFlags: number;
+ *         isUnsync: boolean;
+ *         isExtended: boolean;
+ *         isExpirimental: boolean;
+ *         hasFooter: boolean;
+ *         unknownFlag: number;
+ *     };
+ *     size: number;
+ * }} ID3EndPart
+ */
+/**
+ * @typedef {{
+ *     magic?: string;
+ *     version?: number;
+ *     revision?: number;
+ *     flags?: number | {
+ *         isUnsync: boolean;
+ *         isExtended: boolean;
+ *         isExpirimental: boolean;
+ *         hasFooter: boolean;
+ *         unknownFlag: number;
+ *     };
+ *     size: number;
+ * }} ID3EndPartArgs
+ */
+/**
+ * @typedef {{
+ *     size: number;
+ *     flagCount: number;
+ *     flags: [ArrayBuffer]; // Todo
+ * }} ID3ExtHeader
+ */
+/**
+ * @typedef {{
+ *     size: number;
+ *     flagCount: number;
+ *     flags: [ArrayBuffer]; // Todo
+ * }} ID3ExtHeaderArgs
+ */
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {null | ID3EndPart}
+ */
+function _parseID3v2EndPart(arrayBuffer) {
+    const scanner = newScanner(arrayBuffer);
+    if (!scanner.verify(charCodes("ID3"))&&!scanner.verify(charCodes("3DI"))) {
+        // No ID3v2 Header Or Footer found
+        return null;
+    }
+    const magic = bytesToStr(scanner.extract(3),0);
+    scanner.increment(3);
+    const [version, revision, rawFlags] = scanner.extract(3);
+    scanner.increment(3);
+    const [isUnsync, isExtended, isExpirimental, hasFooter, unknownFlag] = [
+        Boolean(rawFlags & 0x80), // Bit 7: Unsynchronisation
+        Boolean(rawFlags & 0x40), // Bit 6: Extended header
+        Boolean(rawFlags & 0x20), // Bit 5: Experimental
+        Boolean(rawFlags & 0x10), // Bit 4: Footer present
+        rawFlags & 0x0F           // Bits 3-0: Reserved/Unknown
+    ];
+    const rawSize = scanner.extract(4);
     scanner.increment(4);
-    const frames = _parseID3v2Frames(arrayBuffer.slice(scanner.scanned, scanner.scanned + decodedLength), version);
-    const remaining = scanner.remaining().buffer;
-    return { frames, remaining };
+    const size = (rawSize[0] << 21) + (rawSize[1] << 14) + (rawSize[2] << 7) + rawSize[3];
+    return {
+        magic,
+        version,
+        revision,
+        flags: {
+            rawFlags,
+            isUnsync,
+            isExtended,
+            isExpirimental,
+            hasFooter,
+            unknownFlag
+        },
+        size
+    };
+}
+/**
+ * @param {ID3EndPartArgs} header
+ * @param {boolean} [isFooter]
+ * @returns {ArrayBuffer}
+ */
+function _buildID3v2EndPart(header,isFooter) {
+    const builder = newBuilder();
+    builder.write(charCodes(header.magic ?? isFooter ? "3DI":"ID3"));
+    builder.write([header.version ?? 4, header.revision ?? 0]);
+    const flagByte = (typeof header.flags === "number") ? header.flags : (
+        (header.flags?.isUnsync ? 0x80 : 0) |       // Bit 7: Unsynchronisation
+        (header.flags?.isExtended ? 0x40 : 0) |     // Bit 6: Extended header
+        (header.flags?.isExpirimental ? 0x20 : 0) | // Bit 5: Experimental
+        (header.flags?.hasFooter ? 0x10 : 0) |      // Bit 4: Footer present
+        ((header.flags?.unknownFlag ?? 0) & 0x0F)   // Bits 3-0: Reserved/Unknown
+    );
+    builder.write([flagByte]);
+    builder.write([header.size >>> 21 & 127, header.size >>> 14 & 127, header.size >>> 7 & 127, header.size & 127]);
+    return builder.result();
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {null | ID3EndPart}
+ */
+function _parseID3v2Header(arrayBuffer) {
+    return _parseID3v2EndPart(arrayBuffer);
+}
+/**
+ * @param {ID3EndPartArgs} header
+ * @returns {ArrayBuffer}
+ */
+function _buildID3v2Header(header) {
+    return _buildID3v2EndPart(header);
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {null | ID3EndPart}
+ */
+function _parseID3v2Footer(arrayBuffer) {
+    return _parseID3v2EndPart(arrayBuffer);
+}
+/**
+ * @param {ID3EndPartArgs} footer
+ * @returns {ArrayBuffer}
+ */
+function _buildID3v2Footer(footer) {
+    return _buildID3v2EndPart(footer, true);
+}
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {null | ID3ExtHeader}
+ */
+function _parseID3v2ExtHeader(arrayBuffer) {
+    const scanner = newScanner(arrayBuffer);
+    const rawSize = scanner.extract(4);
+    scanner.increment(4);
+    const size = (rawSize[0] << 21) + (rawSize[1] << 14) + (rawSize[2] << 7) + rawSize[3];
+    const flagCount = scanner.extract(1)[0];
+    console.warn("Extended Headers are not yet fully supported.");
+    return {
+        size,
+        flagCount,
+        flags: [scanner.remaining().buffer.slice()]
+    };
+}
+/**
+ * @param {ID3ExtHeaderArgs} extHeader
+ * @returns {ArrayBuffer}
+ */
+function _buildID3v2ExtHeader(extHeader) {
+    const builder = newBuilder();
+    builder.write([extHeader.size >>> 21 & 127, extHeader.size >>> 14 & 127, extHeader.size >>> 7 & 127, extHeader.size & 127]);
+    builder.write([extHeader.flagCount]);
+    console.warn("Extended Headers are not yet fully supported.");
+    builder.write([...new Uint8Array(extHeader.flags[0])]);
+    return builder.result();
 }
 /**
  * @param {ArrayBuffer} arrayBuffer 
@@ -393,6 +607,165 @@ function _parseID3v2Frames(arrayBuffer, version = 3) {
     }
     /** @type {ID3Frame[]} */
     return rawFrames.map(rf=>parseFrame(rf,pre3));
+}
+/**
+ * @param {ID3Frame} frame
+ * @returns {ArrayBuffer}
+ */
+function buildFrame(frame) {
+    const builder = newBuilder();
+    builder.write(strToBytes(frame.name));//frame name, encoded
+    builder.write(intToBytes(frame.size - 10));//frame size, encoded
+    builder.write([0,0]);//FrameFlags (0's)
+    switch (frame.name) {
+        case "TPE1": case "TDAT": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC": case "TDRC": case "TENC": case "TCMP":
+            builder.write([1]);
+            builder.write(strToBytes(frame.value, 2));
+            return builder.result();
+        case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
+            builder.write(strToBytes(frame.value));
+            return builder.result();
+        case "TXXX":  case "WXXX": case "USLT": case "COMM":
+            builder.write([1]);
+            if (frame.name === "USLT" || frame.name === "COMM") {
+                builder.write(frame.language);
+            }
+            builder.write(strToBytes(frame.description,1));
+            builder.write(strToBytes(frame.value,(frame.name === "WXXX") ? 3:1));
+            return builder.result();
+        case "TBPM": case "TLEN": case "TYER": case "PCNT":
+            builder.write([0]);
+            builder.write(strToBytes(frame.value+""));
+            return builder.result();
+        case "PRIV": case "UFID":
+            builder.write(strToBytes(frame.id));
+            builder.write([0,...new Uint8Array(frame.value)]);
+            return builder.result();
+        case "APIC":
+            builder.write([frame.useUnicodeEncoding ? 1 : 0]);
+            builder.write(strToBytes(frame.mimeType));
+            builder.write([0, frame.pictureType]);
+            if (frame.useUnicodeEncoding) {
+                builder.write(strToBytes(frame.description,1));
+            } else {
+                builder.write(strToBytes(frame.description,0));
+            }
+            builder.write([...new Uint8Array(frame.value)]);
+            return builder.result();
+        case "IPLS":
+            builder.write([1])
+            frame.value.forEach((t) => {
+                builder.write(strToBytes(t[0].toString(),1));
+                builder.write(strToBytes(t[1].toString(),1));
+            });
+            return builder.result();
+        case "SYLT": 
+            builder.write([1].concat(frame.language).concat(frame.timestampFormat).concat(frame.type));
+            builder.write(strToBytes(frame.description,1));
+            frame.value.forEach((t) => {
+                builder.write(strToBytes(t[0].toString(),1));
+                builder.write(intToBytes(t[1]));
+            });
+            return builder.result();
+        case "RBUF":
+            // bufferSize is 3 bytes, offsetToNextTag is 4 bytes, embeddedInfoFlag is 1 byte (bit 1)
+            builder.write([
+                (frame.bufferSize >>> 16) & 255,
+                (frame.bufferSize >>> 8) & 255,
+                frame.bufferSize & 255
+            ]);
+            builder.write([frame.embeddedInfoFlag ? 0x02 : 0]);
+            builder.write([
+                (frame.offsetToNextTag >>> 24) & 255,
+                (frame.offsetToNextTag >>> 16) & 255,
+                (frame.offsetToNextTag >>> 8) & 255,
+                frame.offsetToNextTag & 255
+            ]);
+            return builder.result();
+        case "EQUA": {
+            builder.write([16]); // Defaulting to 16-bit adjustment resolution
+            frame.value.forEach(eq => {
+                const inc = eq.adjustment >= 0;
+                const adj = Math.abs(eq.adjustment);
+                // Frequency is 15 bits, high bit indicates increment/decrement flag
+                const freqHigh = ((eq.frequency >> 8) & 0x7F) | (inc ? 0x80 : 0x00);
+                const freqLow = eq.frequency & 0xFF;
+                builder.write([freqHigh, freqLow]);
+                // Writing 16-bit (2 bytes) adjustment
+                builder.write([(adj >> 8) & 0xFF, adj & 0xFF]);
+            });
+            return builder.result();
+        }
+        case "ETCO": {
+            builder.write([1]); // Time stamp format (1 = absolute time using milliseconds)
+            frame.value.forEach(item => {
+                builder.write([item.type]);
+                builder.write(intToBytes(item.timestamp));
+            });
+            return builder.result();
+        }
+        case "GEOB": {
+            builder.write([1]); // Text encoding (Unicode/UTF-8)
+            builder.write(strToBytes(frame.mimeType, 0)); // MIME type is Latin-1 encoded
+            builder.write(strToBytes(frame.filename, 1));
+            builder.write(strToBytes(frame.description, 1));
+            builder.write([...new Uint8Array(frame.value)]);
+            return builder.result();
+        }
+        case "MCDI": {
+            builder.write([...new Uint8Array(frame.value)]);
+            return builder.result();
+        }
+        case "STCO": {
+            builder.write([1]); // Time stamp format
+            frame.value.forEach(item => {
+                builder.write([item.tempo]);
+                builder.write(intToBytes(item.timestamp));
+            });
+            return builder.result();
+        }
+        case "MLLT": {
+            builder.write([
+                (frame.framesBetweenReference >> 8) & 0xFF,
+                frame.framesBetweenReference & 0xFF
+            ]);
+            builder.write([
+                (frame.bytesBetweenReference >> 16) & 0xFF,
+                (frame.bytesBetweenReference >> 8) & 0xFF,
+                frame.bytesBetweenReference & 0xFF
+            ]);
+            builder.write([
+                (frame.millisecondsBetweenReference >> 16) & 0xFF,
+                (frame.millisecondsBetweenReference >> 8) & 0xFF,
+                frame.millisecondsBetweenReference & 0xFF
+            ]);
+            builder.write([frame.devianceBits]);
+            builder.write([0, 0]); // placeholder skip for bitsForBytes & bitsForMillis
+            frame.deviations.forEach(dev => {
+                // Packing deviations based on devianceBits logic if needed, or writing raw
+                builder.write(intToBytes(dev));
+            });
+            return builder.result();
+        }
+        case "RVAD": {
+            const flags = (frame.value.increment ? 0x01 : 0) | ((frame.value.bitsUsed & 0x07) << 1);
+            builder.write([flags]);
+            // If channels are populated, serialize them out per spec requirements
+            frame.value.channels.forEach(ch => {
+                builder.write([ch.channel]);
+                builder.write([
+                    (ch.volumeChange >> 8) & 0xFF,
+                    ch.volumeChange & 0xFF
+                ]);
+                if (ch.peakVolume) {
+                    builder.write([...new Uint8Array(ch.peakVolume)]);
+                }
+            });
+            return builder.result();
+        }
+        default:
+            throw new Error(`Unsupported frame ${JSON.stringify(frame)}`)
+    }
 }
 /** 
  * @param {RawFrame} rawFrame
@@ -852,164 +1225,13 @@ class Id3Editor {
         write(((bodyLength) => {
             const t = 127;return [bodyLength >>> 21 & t, bodyLength >>> 14 & t, bodyLength >>> 7 & t, bodyLength & t];
         })(totalTagLength - 10));//length, encoded
-        this.frames.forEach(frame => {
-            write(strToBytes(frame.name));//frame name, encoded
-            write(intToBytes(frame.size - 10));//frame size, encoded
-            write([0,0]);//FrameFlags (0's)
-            switch (frame.name) {
-                case "TPE1": case "TDAT": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC": case "TDRC": case "TENC": case "TCMP":
-                    write([1]);
-                    write(strToBytes(frame.value, 2));
-                    break;
-                case "WCOM": case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY": case "WPUB":
-                    write(strToBytes(frame.value));
-                    break;
-                case "TXXX":  case "WXXX": case "USLT": case "COMM":
-                    write([1]);
-                    if (frame.name === "USLT" || frame.name === "COMM") {
-                        write(frame.language);
-                    }
-                    write(strToBytes(frame.description,1));
-                    write(strToBytes(frame.value,(frame.name === "WXXX") ? 3:1));
-                    break;
-                case "TBPM": case "TLEN": case "TYER": case "PCNT":
-                    c++;
-                    write(strToBytes(frame.value+""));
-                    break;
-                case "PRIV": case "UFID":
-                    write(strToBytes(frame.id));
-                    c++;
-                    write(new Uint8Array(frame.value));
-                    break;
-                case "APIC":
-                    write([frame.useUnicodeEncoding ? 1 : 0]);
-                    write(strToBytes(frame.mimeType));
-                    write([0, frame.pictureType]);
-                    if (frame.useUnicodeEncoding) {
-                        write(strToBytes(frame.description,1));
-                    } else {
-                        write(strToBytes(frame.description,0));
-                    }
-                    write(new Uint8Array(frame.value));
-                    break;
-                case "IPLS":
-                    write([1])
-                    frame.value.forEach((t) => {
-                        write(strToBytes(t[0].toString(),1));
-                        write(strToBytes(t[1].toString(),1));
-                    });
-                    break;
-                case "SYLT": 
-                    write([1].concat(frame.language).concat(frame.timestampFormat).concat(frame.type));
-                    write(strToBytes(frame.description,1));
-                    frame.value.forEach((t) => {
-                        write(strToBytes(t[0].toString(),1));
-                        write(intToBytes(t[1]));
-                    });
-                    break;
-                case "RBUF":
-                    // bufferSize is 3 bytes, offsetToNextTag is 4 bytes, embeddedInfoFlag is 1 byte (bit 1)
-                    write([
-                        (frame.bufferSize >>> 16) & 255,
-                        (frame.bufferSize >>> 8) & 255,
-                        frame.bufferSize & 255
-                    ]);
-                    write([frame.embeddedInfoFlag ? 0x02 : 0]);
-                    write([
-                        (frame.offsetToNextTag >>> 24) & 255,
-                        (frame.offsetToNextTag >>> 16) & 255,
-                        (frame.offsetToNextTag >>> 8) & 255,
-                        frame.offsetToNextTag & 255
-                    ]);
-                    break;
-                case "EQUA": {
-                    write([16]); // Defaulting to 16-bit adjustment resolution
-                    frame.value.forEach(eq => {
-                        const inc = eq.adjustment >= 0;
-                        const adj = Math.abs(eq.adjustment);
-                        // Frequency is 15 bits, high bit indicates increment/decrement flag
-                        const freqHigh = ((eq.frequency >> 8) & 0x7F) | (inc ? 0x80 : 0x00);
-                        const freqLow = eq.frequency & 0xFF;
-                        write([freqHigh, freqLow]);
-                        // Writing 16-bit (2 bytes) adjustment
-                        write([(adj >> 8) & 0xFF, adj & 0xFF]);
-                    });
-                    break;
-                }
-                case "ETCO": {
-                    write([1]); // Time stamp format (1 = absolute time using milliseconds)
-                    frame.value.forEach(item => {
-                        write([item.type]);
-                        write(intToBytes(item.timestamp));
-                    });
-                    break;
-                }
-                case "GEOB": {
-                    write([1]); // Text encoding (Unicode/UTF-8)
-                    write(strToBytes(frame.mimeType, 0)); // MIME type is Latin-1 encoded
-                    write(strToBytes(frame.filename, 1));
-                    write(strToBytes(frame.description, 1));
-                    write(new Uint8Array(frame.value));
-                    break;
-                }
-                case "MCDI": {
-                    write(new Uint8Array(frame.value));
-                    break;
-                }
-                case "STCO": {
-                    write([1]); // Time stamp format
-                    frame.value.forEach(item => {
-                        write([item.tempo]);
-                        write(intToBytes(item.timestamp));
-                    });
-                    break;
-                }
-                case "MLLT": {
-                    write([
-                        (frame.framesBetweenReference >> 8) & 0xFF,
-                        frame.framesBetweenReference & 0xFF
-                    ]);
-                    write([
-                        (frame.bytesBetweenReference >> 16) & 0xFF,
-                        (frame.bytesBetweenReference >> 8) & 0xFF,
-                        frame.bytesBetweenReference & 0xFF
-                    ]);
-                    write([
-                        (frame.millisecondsBetweenReference >> 16) & 0xFF,
-                        (frame.millisecondsBetweenReference >> 8) & 0xFF,
-                        frame.millisecondsBetweenReference & 0xFF
-                    ]);
-                    write([frame.devianceBits]);
-                    write([0, 0]); // placeholder skip for bitsForBytes & bitsForMillis
-                    frame.deviations.forEach(dev => {
-                        // Packing deviations based on devianceBits logic if needed, or writing raw
-                        write(intToBytes(dev));
-                    });
-                    break;
-                }
-                case "RVAD": {
-                    const flags = (frame.value.increment ? 0x01 : 0) | ((frame.value.bitsUsed & 0x07) << 1);
-                    write([flags]);
-                    // If channels are populated, serialize them out per spec requirements
-                    frame.value.channels.forEach(ch => {
-                        write([ch.channel]);
-                        write([
-                            (ch.volumeChange >> 8) & 0xFF,
-                            ch.volumeChange & 0xFF
-                        ]);
-                        if (ch.peakVolume) {
-                            write(new Uint8Array(ch.peakVolume));
-                        }
-                    });
-                    break;
-                }
-                default:
-                    /** @type {undefined} */
-                    const u = frame.name;
-                    throw new Error(`Unsupported frame ${u}`)
-            }
-        }
-        ), c += this.padding, newUint.set(new Uint8Array(this.arrayBuffer), c), this.arrayBuffer = newBuffer, newBuffer
+        const frames = this.frames.map(buildFrame);
+        frames.forEach(f=>write(new Uint8Array(f)));
+        frames.forEach(f=>c+=f.byteLength);
+        c += this.padding;
+        newUint.set(new Uint8Array(this.arrayBuffer), c);
+        this.arrayBuffer = newBuffer;
+        return newBuffer;
     }
     
     getBlob() {
@@ -1045,7 +1267,7 @@ export {
     _parseID3v2Frames,
     parseFrame,
     removeTags,
-    genFrame,
+    buildFrame as genFrame,
     _genIntegerFrame,
     _genStringFrame,
     _genPictureFrame,
