@@ -1,4 +1,14 @@
 // @ts-check
+// made with:
+// alot of sweat and grease,
+// a bit of inspiration,
+// a base from https://www.npmjs.com/package/browser-id3-writer,
+// some suggestions and debugging with Gemini & Copilot - usually manually applied
+// the references in https://github.com/taglib/taglib/blob/master/taglib/mpeg/id3v2/
+// which containing repository has the library I used instead,
+//  which handles more tags and still works in both browser and node.js in its webassembly version.
+//  I still got this to a stable, functional state before switching, just for you.
+
 /** @typedef {{ name: string, value: string, size: number }} stringFrame */
 /** @typedef {{ name: string, value: number, size: number }} integerFrame */
 /** 
