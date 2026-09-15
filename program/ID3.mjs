@@ -348,7 +348,7 @@ function _readID3v2(uint8) {
     const extSize = header.flags.isExtended?((rs)=>(rs[0] << 21) + (rs[1] << 14) + (rs[2] << 7) + rs[3])(uint8.slice(c,c+4)):0;
     const extHeader = (!header.flags.isExtended)?null:_parseID3v2ExtHeader(ext(extSize));
     const framesNPadding = uint8.slice(c,c+header.size-extSize);
-    const framesSize = framesNPadding.findLastIndex(v=>v!==0);
+    const framesSize = Math.min(framesNPadding.findLastIndex(v=>v!==0)+2,framesNPadding.length);
     const frames = _parseID3v2Frames(ext(framesSize),header.version);
     if (!frames) return null;
     const padding = framesNPadding.byteLength-framesSize;
@@ -591,9 +591,10 @@ function _parseID3v2Frames(uint8, version = 3) {
     /** @type {RawFrame[]} */
     const rawFrames = [];
     while (allframesScanner.scanned < allframesScanner.Uint.length) {
+        if (allframesScanner.scanned+(pre3 ? 6:8)<allframesScanner.Uint.length) break;
         let nm = bytesToStr(allframesScanner.extract(pre3 ? 3:4));
         if (!nm || nm === "\0\0\0\0" || nm === "\0\0\0") break;
-        if (!nm.match(new RegExp("^[A-Z0-9]{"+(pre3?3:4)+"}$"))) throw new Error("Invalid frame name " + nm);
+        if (!nm.match(new RegExp("^[A-Z0-9]{"+(pre3?3:4)+"}$"))) {console.warn("Invalid frame name " + nm + ".\nReturning what I have.");break;}
         if (pre3) {
             /** @type {Record<String,ID3Frame["name"]>} */
             const pre3Frames = { /* TEXT FRAMES */ /* Title */ "TT2": "TIT2", /* Artist */ "TP1": "TPE1", /* Album */ "TAL": "TALB", /* Track number */ "TRK": "TRCK", /* Year */ "TYE": "TYER", /* Genre */ "TCO": "TCON", /* Album Artist / Band */ "TP2": "TPE2", /* Composer */ "TCM": "TCOM", /* Lyricist */ "TXT": "TEXT", /* Initial key */ "TKE": "TKEY", /* Language */ "TLA": "TLAN", /* Length */ "TLE": "TLEN", /* Publisher */ "TPB": "TPUB", /* ISRC */ "TRC": "TSRC", /* Part of set */ "TPA": "TPOS", /* Content group */ "TT1": "TIT1", /* Subtitle */ "TT3": "TIT3", /* Media type */ "TMT": "TMED", /* Encoded by */ "TEN": "TENC", /* COMMENTS & LYRICS */ /* Comments */ "COM": "COMM", /* Synchronized lyrics */ "SLT": "SYLT", /* URL FRAMES */ "WCM": "WCOM", "WCP": "WCOP", "WAF": "WOAF", "WAR": "WOAR", "WAS": "WOAS", "WPB": "WPUB", /* SPECIAL / COMPLEX FRAMES */ /* Involved people list */ "IPL": "IPLS", /* Attached picture */ "PIC": "APIC", /* Buffer size*/ "BUF": "RBUF", /* Play counter*/ "CNT": "PCNT", /* Equalization */ "EQU": "EQUA", /* Event Timing */ "ETC": "ETCO", /* File In Tag */ "GEO": "GEOB", /* CD ID*/ "MCI": "MCDI", /* MPEG Lookup Table */ "MLL": "MLLT", /* Relative Volume */ "RVA": "RVAD", /* TempoSync */ "STC": "STCO", /* Unsynced lyrics */ "ULT": "USLT", /* File UID */ "UFI": "UFID", /* Custom URL */ "WXX": "WXXX" };
@@ -627,7 +628,8 @@ function _parseID3v2Frames(uint8, version = 3) {
 function buildFrame(frame) {
     const builder = newBuilder();
     builder.write(strToBytes(frame.name));//frame name, encoded
-    builder.write(intToBytes(frame.size - 10));//frame size, encoded
+    builder.write([frame.size-10 >>> 21 & 127, frame.size-10 >>> 14 & 127, frame.size-10 >>> 7 & 127, frame.size-10 & 127]);//frame size, encoded
+    // builder.write(intToBytes(frame.size - 10));
     builder.write([0,0]);//FrameFlags (0's)
     switch (frame.name) {
         case "TPE1": case "TDAT": case "TCOM": case "TCON": case "TLAN": case "TIT1": case "TIT2": case "TIT3": case "TALB": case "TPE2": case "TPE3": case "TPE4": case "TRCK": case "TPOS": case "TKEY": case "TMED": case "TPUB": case "TCOP": case "TEXT": case "TSSE": case "TSRC": case "TDRC": case "TENC": case "TCMP":
