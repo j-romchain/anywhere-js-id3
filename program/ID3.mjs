@@ -349,7 +349,7 @@ function _readID3v2(uint8) {
     const extHeader = (!header.flags.isExtended)?null:_parseID3v2ExtHeader(ext(extSize));
     const framesNPadding = uint8.slice(c,c+header.size-extSize);
     const framesSize = framesNPadding.findLastIndex(v=>v!==0);
-    const frames = _parseID3v2Frames(ext(framesSize));
+    const frames = _parseID3v2Frames(ext(framesSize),header.version);
     if (!frames) return null;
     const padding = framesNPadding.byteLength-framesSize;
     const footer = header.flags.hasFooter ? _parseID3v2Footer(ext(10)):null;
@@ -618,7 +618,7 @@ function _parseID3v2Frames(uint8, version = 3) {
         rawFrames.push(f);
     }
     /** @type {ID3Frame[]} */
-    return rawFrames.map(rf=>parseFrame(rf,pre3));
+    return rawFrames.map(rf=>parseFrame(rf,pre3)).filter(v=>v!==null);
 }
 /**
  * @param {ID3Frame} frame
@@ -782,7 +782,7 @@ function buildFrame(frame) {
 /** 
  * @param {RawFrame} rawFrame
  * @param {boolean} pre3
- * @returns {ID3Frame}
+ * @returns {ID3Frame | null};
  */
 function parseFrame(rawFrame, pre3) {
     const fscn = newScanner(rawFrame.uInt8);
@@ -990,7 +990,8 @@ function parseFrame(rawFrame, pre3) {
         default:
             /** @type {undefined} */
             const u = rawFrame.name;
-            throw new Error(`Unsupported frame ${u}.`);
+            console.warn(`Unsupported frame ${u}.`);
+            return null;
     }
 }
 /**
