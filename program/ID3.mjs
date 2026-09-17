@@ -1,13 +1,19 @@
 // @ts-check
+// (re)written by ChainSword20000
 // made with:
-// alot of sweat and grease,
+// alot of thought and hours and typing,
 // a bit of inspiration,
-// a base from https://www.npmjs.com/package/browser-id3-writer,
+// a base from https://www.npmjs.com/package/browser-id3-writer, completely refactored and rewritten if you couldn't tell,
 // some suggestions and debugging with Gemini & Copilot - both with free limits - suggestions usually manually applied
 // the id3v2 references in https://github.com/taglib/taglib/blob/master/taglib/mpeg/id3v2/
 // which containing repository has the library I used instead,
-//  which handles more tags and still works in both browser and node.js in its webassembly version.
-//  I still got this to a stable, functional state before switching, just for you.
+// which handles more tags and still works in both browser and node.js in its webassembly version.
+// I still got this to a stable, functional state before switching, just for you, future user.
+// unless something has happened, this should be available at https://github.com/j-romchain/anywhere-js-id3
+// I, ChainSword20000, grant my non-revokable permission to do whatever you like with this.
+// My, (ChainSword20000's) permission does not supersede any other permissions which may be required.
+// I, ChainSword20000, do not garauntee, at all, in any way, this.
+// This code is as-is, use expressly at your own risk.
 
 // BEWARE: the spread (...) operator causes stack overflows with big arguments, 
 // so a 50000 item cover image ArrayBuffer or Uint8Array will crash with no error if you use it.
