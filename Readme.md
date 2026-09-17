@@ -1,0 +1,1 @@
+just take a look at id3.mjs, specifically the top comment block. you can likely just drop it in your project as is and have it work.
