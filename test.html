@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ID3.mjs Browser Test</title>
+    <style>
+        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+        #output { background: #2d2d2d; padding: 15px; border-radius: 5px; white-space: pre-wrap; border: 1px solid #444; }
+        .success { color: #4ec9b0; }
+        .error { color: #f44747; }
+    </style>
+</head>
+<body>
+    <h1>ID3.mjs Live Test Runner</h1>
+    <div id="output">Running tests...</div>
+
+    <script type="module">
+        import id3 from './ID3.mjs';
+
+        const outputDiv = document.getElementById('output');
+
+        // Capture console.log and console.error so they display on the page
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        function appendToOutput(message, className = '') {
+            const span = document.createElement('span');
+            span.className = className;
+            span.textContent = message + '\n';
+            outputDiv.appendChild(span);
+        }
+
+        console.log = (...args) => {
+            originalLog(...args);
+            appendToOutput(args.join(' '));
+        };
+
+        console.error = (...args) => {
+            originalError(...args);
+            appendToOutput(args.join(' '), 'error');
+        };
+
+        // Run the self-test and show success/failure state on screen
+        try {
+            outputDiv.textContent = ''; // Clear "Running tests..."
+            const success = await id3.test();
+            if (success) {
+                appendToOutput('\n✨ Self-test passed successfully!', 'success');
+            } else {
+                appendToOutput('\n❌ Self-test returned false/failure.', 'error');
+            }
+        } catch (err) {
+            appendToOutput('\n❌ Self-test threw an exception: ' + err.message, 'error');
+            console.error(err);
+        }
+    </script>
+</body>
+</html>

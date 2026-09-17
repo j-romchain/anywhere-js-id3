@@ -1267,7 +1267,8 @@ async function test(logOutput){
     const id3 = td.import;
     const editorClass = id3.Id3Editor;
     const mp3 = testData.start;
-    const mp3Buffer = (typeof process === undefined) ? new Uint8Array(mp3):Buffer.from(mp3);
+    // @ts-ignore
+    const mp3Buffer = (typeof process === "undefined") ? new Uint8Array(mp3):Buffer.from(mp3);
     const editor = new editorClass(mp3Buffer);
     /** @type {boolean[]} */
     let tests = [];
@@ -1326,7 +1327,8 @@ const myself = {
     test
 };
 export default myself;
-module.exports = myself;
+// @ts-ignore
+if (typeof module !== "undefined") {module.exports = myself;}
 // --- Self-Test Entry Point Trigger ---
 // @ts-ignore
 const isMainNode = typeof process !== 'undefined' && process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'));
